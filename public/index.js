@@ -1,38 +1,35 @@
-let roomList = [];
-
-let isPlayMode = true;
-
-display();
+let roomList, isPlayMode;
 
 function display(){
   $('#displayList').empty();
-  if(isPlayMode){
+  if(isPlayMode == false){
     $.get("/api/room/list", (data) => {
       roomList = data.data;
-      for(let i in roomList){
-        if(roomList[i].population >= 8) continue;
-        let html = `<button class="room playing" onClick=clickedButton('${roomList[i].id}')>
-        <span class="mainInfo">${('00' + roomList[i].number).slice(-3)}</span><br>
-        <span class="addInfo">member ${roomList[i].population}/8</span>
+      for(let val of roomList){
+        let html = `<button class="room notPlaying" onClick=clickedButton('${val.id}')>
+        <span class="mainInfo">${('00' + val.number).slice(-3)}</span><br>
+        <span class="addInfo">member ${val.population}/8</span>
         </button>`;
         $("#displayList").append(html);
+        $('body').removeClass("playing").addClass("notPlaying");
       }
     });
   } else {
+    isPlayMode = true;
     $.get("/api/room/list", (data) => {
       roomList = data.data;
-      for(let i in roomList){
-        let html = `<button class="room notPlaying" onClick=clickedButton('${roomList[i].id}')>
-        <span class="mainInfo">${('00' + roomList[i].number).slice(-3)}</span><br>
-        <span class="addInfo">member ${roomList[i].population}/8</span>
+      for(let val of roomList){
+        if(val.population >= 8) continue;
+        let html = `<button class="room playing" onClick=clickedButton('${val.id}')>
+        <span class="mainInfo">${('00' + val.number).slice(-3)}</span><br>
+        <span class="addInfo">member ${val.population}/8</span>
         </button>`;
         $("#displayList").append(html);
+        $('body').removeClass("notPlaying").addClass("playing");
       }
     });
   }
 }
-
-
 
 function clickedButton(id){
   if(isPlayMode){
@@ -46,24 +43,25 @@ function clickedButton(id){
   }
 }
 
-$('button[id=changeMode]').click(() => {
-  if(isPlayMode){
+function changeMode(){
+  if(isPlayMode == true){
     isPlayMode = false;
   } else {
     isPlayMode = true;
   }
-});
-
-function changeMode(){
-  if(isPlayMode){
+  if(isPlayMode == false){
+    display();
+    $('#displayMode').html('観戦');
+    $('#changeMode').html('参戦モードへ');
+    $('button[id=makeRoom]').remove();
+  } else {
     display();
     $('#displayMode').html('参戦');
     $('#changeMode').html('観戦モードへ');
     $('button[id=makeRoom]').remove();
     $(`<button id="makeRoom">
       <span class="mainInfo">new Room</span>
-    </button>`).insertAfter('div[id=displayList]');
-    $('body').removeClass("notPlaying").addClass("playing");
+      </button>`).insertAfter('div[id=displayList]');
     $("button[id=makeRoom]").click(() => {
       $.post("/api/room/make", (data) => {
         $.post("/api/room/" + data.data + "/connect", (data) => {
@@ -71,11 +69,5 @@ function changeMode(){
         });
       });
     });
-  } else {
-    display();
-    $('#displayMode').html('観戦');
-    $('body').removeClass("playing").addClass("notPlaying");
-    $('#changeMode').html('参戦モードへ');
-    $('button[id=makeRoom]').remove();
   }
 }
