@@ -6,12 +6,11 @@
     <link rel="stylesheet" type="text/css" href="index.css">
   </head>
   <body onload="display()">
-    <h2 id="displayMode">参戦</h2>
-    <button id="changeMode" onClick="changeMode()">観戦モードへ</button>
+    <img src="img/title.png">
+    <h1 id="displayMode"></h1>
+    <button id="reloadBtn" onClick="display()"><img src="img/reload.png" id="reloadImg"></button>
+    <button id="changeMode" onClick="changeMode()"></button>
     <div id="displayList"></div>
-    <!-- <button id="makeRoom">
-      <span class="mainInfo">new Room</span>
-    </button> -->
     <script src="jquery-3.1.0.min.js" charset="utf-8"></script>
     <script src="index.js" charset="utf-8"></script>
   </body>

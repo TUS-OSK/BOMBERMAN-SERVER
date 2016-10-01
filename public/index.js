@@ -10,8 +10,10 @@ function display(){ // モードに合わせて部屋を表示する関数
       }
     });
     $('body').removeClass("playing").addClass("notPlaying");
+    $('h1').removeClass("playing").addClass("notPlaying");
+    $('#displayList span').removeClass("playing").addClass("notPlaying");
     $('button[id=makeRoom]').remove();
-    $('#displayMode').html('観戦');
+    $('#displayMode').html('観戦モード');
     $('#changeMode').html('参戦モードへ');
   } else { // 参戦モード
     isPlayMode = true;
@@ -23,8 +25,10 @@ function display(){ // モードに合わせて部屋を表示する関数
       }
     });
     $('body').removeClass("notPlaying").addClass("playing");
+    $('h1').removeClass("notPlaying").addClass("playing");
+    $('#displayList span').removeClass("notPlaying").addClass("playing");
     $('button[id=makeRoom]').remove();
-    $('#displayMode').html('参戦');
+    $('#displayMode').html('参戦モード');
     $('#changeMode').html('観戦モードへ');
     // 部屋を作るボタンを作る
     $(`<button id="makeRoom">
