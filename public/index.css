@@ -1,0 +1,40 @@
+.room{
+  /* 文字の太さをboldに指定 */
+  font-weight: bold;
+
+/*   縦方向に50px、
+   * 横方向に30pxの余白を指定
+  padding: 50px 30px;*/
+
+  /* 背景色を白色に指定 */
+  background-color: #fff;
+
+  width: 500px;
+  height: 130px;
+
+  /*font-size: 3.8em;
+  color: #248;*/
+
+}
+
+#makeRoom{
+  font-weight: bold;
+  background-color: #fff;
+  width: 500px;
+  height: 130px;
+}
+
+.mainInfo{
+  font-size: 3.8em;
+}
+
+.addInfo{
+  font-size: 1.8em;
+}
+
+.playing{
+  color: #238;
+}
+.notPlaying{
+  color: #8B4513;
+}
