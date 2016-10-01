@@ -1,0 +1,22 @@
+部屋管理
+・部屋作成
+・入室
+・退出
+・部屋削除
+　-部屋の人数が0
+・人数情報？
+・プレイヤーの情報
+・観戦モード？
+
+GET /api/room/list
+現在ある部屋のリストを返す
+部屋　id, (color,) number,  人数,
+
+POST /api/room/:room_id/connect
+:room_idの部屋に入る
+もし人数が規定以上ならエラーメッセージを送る
+
+POST /api/room/make
+新しいroom_idを生成し、そのidを返す
+
+GET /
