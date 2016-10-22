@@ -34,9 +34,6 @@ class Manager {
     }
     user.status = memberStatus.playing;
   }
-  remove(){
-
-  }
   leave(user){
     for(let i in this.roomList[user.rid].members){
       if(this.roomList[user.rid].members[i] === user){
@@ -50,10 +47,10 @@ class Manager {
     leave(user);
     user.rid = null;
   }
-  un
+
 }
 
-const roomManager = new RoomManager();
+const roomManager = new Manager();
 
 class User {
   constructor(uid){
