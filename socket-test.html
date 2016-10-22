@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'/>
+    <title>BOMBERMAN</title>
+  </head>
+  <body>
+    <script src='https://cdn.socket.io/socket.io-1.4.5.js'></script>
+    <script type='text/javascript'>
+      var socketio = io.connect('http://localhost:4000/');
+
+      function send() {
+        socketio.emit('message', 'welcome to BOMBERMAN');   //入室した情報を送る
+      }
+      socketio.on('message', function (data) {
+          console.log(data);
+      });
+      socketio.on('connect', function () {
+        send();
+        console.log('connected');
+      });
+    </script>
+
+      <!--socket.on('enter', function(name) {<-->
+      <!--  console.log(enter);-->
+      <!--})-->
+
+      <!--io.socket.emit('enter');-->
+
+  </body>
+</html>

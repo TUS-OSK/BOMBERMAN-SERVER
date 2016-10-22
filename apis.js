@@ -1,6 +1,9 @@
 // API
 const express = require('express');
 const app = express();
+const socketExecute =  require("./socket-connection");
+
+socketExecute();
 
 app.use('/public', express.static('public'));
 

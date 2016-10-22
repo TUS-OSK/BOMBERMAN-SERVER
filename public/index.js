@@ -72,3 +72,5 @@ function changeMode(){ // モードを変える
     display();
   }
 }
+
+window.mw = new window.Middleware();
