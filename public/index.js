@@ -73,4 +73,4 @@ function changeMode(){ // モードを変える
   }
 }
 
-window.mw = new window.Middleware();
+// window.mw = new window.Middleware();

@@ -19,10 +19,12 @@ class Middleware extends window.EventEmitter {
     });
   }
 
+
   send(data) {
     data.uid = this.uid;
     this.sio.emit('message', data);
   }
 }
 
-window.Middleware = Middleware;
+// window.Middleware = Middleware;
+window.mw = new Middleware();
