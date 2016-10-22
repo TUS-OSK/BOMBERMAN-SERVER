@@ -73,3 +73,5 @@ app.post('/api/room/:room_id/watch', (req, res) => { // request room_id and retu
 });
 
 app.listen(process.env.PORT || 3000);
+
+console.log("server is running. go http://localhost:" + (~~process.env.PORT || 3000) + "/public/index.html\n");
