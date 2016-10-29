@@ -91,10 +91,10 @@ function socketExecute() {
 
   io.sockets.on('connection', function(socket) {
     // console.log('よくわからんけど入室');
-    socket.on('enter', function(data) {
-      console.log('enter', data);
-      if(data.rid === null) outOfRoom.push(data.uid);
-    });
+    // socket.on('enter', function(data) {
+    //   console.log('enter', data);
+    //   if(data.rid === null) outOfRoom.push(data.uid);
+    // });
 
     socket.on('message', function(data) {
       io.sockets.emit('message', data);

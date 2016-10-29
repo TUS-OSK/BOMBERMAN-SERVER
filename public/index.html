@@ -1,20 +1,187 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-    <link rel="stylesheet" type="text/css" href="index.css">
-  </head>
-  <body onload="display()">
-    <img src="img/title.png">
-    <h1 id="displayMode"></h1>
-    <button id="reloadBtn" onClick="display()"><img src="img/reload.png" id="reloadImg"></button>
-    <button id="changeMode" onClick="changeMode()"></button>
-    <div id="displayList"></div>
-    <script src="jquery-3.1.0.min.js" charset="utf-8"></script>
-    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-    <script type="text/javascript" src="event-emitter.js"></script>
-    <script type="text/javascript" src="middleware.js"></script>
-    <script src="index.js" charset="utf-8"></script>
-  </body>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.18.1/build/cssreset/cssreset-min.css">
+  <style>
+    .clearfix:after {
+      content:" ";
+      display:block;
+      clear:both;
+    }
+
+    .root-wrap {
+      width: 100%;
+      background: rgb(97,117,126);
+      /*background: url("http://subtlepatterns2015.subtlepatterns.netdna-cdn.com/patterns/escheresque_ste.png");*/
+    }
+
+    .container {
+      width: 900px;
+      height: 1000px;
+      border-right: 10px solid #F4D0AC;
+      border-left: 10px solid #F4D0AC;
+      margin: 0 auto;
+      padding: 0 30px;
+      background: rgb(255,240,210);
+    }
+
+    .create-room {
+      position: relative;
+    }
+
+    .create-room button {
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #FA7860;
+      padding: 20px 30px;
+      border: none;
+      font-size: 20px;
+      color: #444;
+    }
+
+    .room {
+      padding: 12px 20px;
+      background: rgba(255,255,255,0.7);
+      float: left;
+      margin: 20px;
+    }
+
+    .room-id {
+      text-align: center;
+      width: 200px;
+      font-size: 20px;
+      padding: 10px;
+      border-bottom: 1px solid #aaa;
+    }
+
+    .room-members {
+      text-align: right;
+      color: #555;
+      padding-right: 10px;
+      padding-top: 10px;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="root-wrap">
+    <div class="container">
+      <div class="title">
+        <img src="img/title.png">
+      </div>
+      <div class="create-room">
+        <button>CREATE ROOM</button>
+      </div>
+      <div class="room-list">
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">013</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">3</span>/8
+          </div>
+        </div><!--.room-->
+
+      </div>
+    </div>
+  </div>
+
+  <script src="jquery-3.1.0.min.js" charset="utf-8"></script>
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  <script type="text/javascript" src="event-emitter.js"></script>
+  <script type="text/javascript" src="middleware.js"></script>
+  <script src="index.js" charset="utf-8"></script>
+
+</body>
 </html>
