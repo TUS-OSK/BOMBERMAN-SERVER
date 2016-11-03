@@ -3,6 +3,7 @@ var http = require('http');
 // var socketio = require('socket.io');
 var server = http.createServer();
 
+
 class Manager {
   constructor(){
     // this.rid = Math.random().toString(36).slice(-8);
@@ -47,6 +48,15 @@ class Manager {
     leave(user);
     user.rid = null;
   }
+  findUser(uid) {
+    return (
+      this.outOfRoom.find((user) => user.uid === uid) ||
+      Object.keys(this.roomList)
+        .map((rid) => this.roomList[rid].members.find((user) => user.uid === uid)
+        )
+        .find((something) => something)
+    );
+  }
 
 }
 
@@ -66,7 +76,17 @@ const memberStatus = {
   waiting: 3,
 };
 
+function sendFormat(name, obj, err) {
+  return {
+    name: name,
+    success: !err,
+    msg: err ? err.message : null,
+    data: obj,
+  };
+}
+
 function socketExecute() {
+
   server.on('request', function(req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     var output = fs.readFileSync('./bomberman.html', 'utf-8');
@@ -95,6 +115,19 @@ function socketExecute() {
     //   console.log('enter', data);
     //   if(data.rid === null) outOfRoom.push(data.uid);
     // });
+    ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
+      socket.on(`room-${methodName}`, (args) => {
+        roomManager[methodName].apply(roomManager, args);
+        const user = typeof args[0] === "User" ? args[0] : roomManager.findUser(args[0]);
+        const response = sendFormat(`room-${methodName}`, {
+          roomList: roomManager.roomList,
+          outOfRoom: roomManager.outOfRoom,
+          user: user
+        });
+        io.sockets.emit('message', response);
+        console.log(`receive room-${methodName}:`,args," ---> ",response.data);
+      });
+    });
 
     socket.on('message', function(data) {
       io.sockets.emit('message', data);
