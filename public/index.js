@@ -10,9 +10,8 @@ $(() => {
     const $room = $(event.currentTarget);
     const roomID = $room.find('.room-number').text();
     mw.roomAction('join', roomID);
-    // TODO: ボンバーマンの画面に遷移する
+    startWaiting();
   });
-
 
   mw.on('room-createUser', (d) => {
     const roomList = d.data.roomList;
@@ -24,6 +23,9 @@ $(() => {
   mw.on('room-createRoom', (d) => {
     const rid = d.data.user.rid;
     addRoomElement(rid, 1);
+  });
+  mw.on('room-startGame', (d) => {
+    startGame();
   });
 
   function addRoomElement(rid, count) {
@@ -38,4 +40,23 @@ $(() => {
       </div>
     `);
   }
+
+  function startWaiting(){
+    $(".container").html(`
+      <div class="title">
+        <img src="images/title.png">
+      </div>
+      <div class="waitingContent">
+        <p>揃うの待ち</p>
+        <p>人数:<span class="waiting-count">1</span>/8</p>
+        <input type="button" value="待たずに始める" onclick="sendStartSignal()">
+      </div>
+    `);
+  }
+
+
 });
+
+function sendStartSignal(){
+  mw.roomAction('startGame');
+}

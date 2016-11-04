@@ -19,10 +19,10 @@ class Manager {
     user.status = memberStatus.playing;
     this.roomList[rid] = {
       members: [user],
-      watchers: [],
+      waiting: true,
     };
   }
-  join(user, rid){
+  join(user, rid, socket){
     if (this.roomList[rid].members.length >= 8) {
       throw {
         name: "RoomCapacityException",
@@ -40,6 +40,7 @@ class Manager {
       user.rid = rid;
     }
     user.status = memberStatus.playing;
+    socket.join(rid);
   }
   leave(user){
     for(let i in this.roomList[user.rid].members){
@@ -63,7 +64,9 @@ class Manager {
         .find((something) => !!something)
     );
   }
-
+  startGame(rid){
+    this.roomList[rid].waiting = false;
+  }
 }
 
 const roomManager = new Manager();
@@ -121,16 +124,17 @@ function socketExecute() {
     //   console.log('enter', data);
     //   if(data.rid === null) outOfRoom.push(data.uid);
     // });
-    ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
+    ["createUser","createRoom","join","leave","remove","startGame"].forEach((methodName) => {
       socket.on(`room-${methodName}`, (args) => {
         let error = null;
+        args && args.push(socket);
         try {
           roomManager[methodName].apply(roomManager, args);
         } catch (e) {
           error = e;
         }
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
-        console.log(user);
+        // console.log(user);
         const response = sendFormat(`room-${methodName}`, {
           roomList: roomManager.roomList,
           outOfRoom: roomManager.outOfRoom,
@@ -140,6 +144,14 @@ function socketExecute() {
         // console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
     });
+    socket.on('bomberman-main', (data) => {
+      console.log(data)
+      if (data.roomID) {
+              console.log(14)
+
+        io.to(data.roomID).emit('bomberman-main', data);
+      }
+    })
 
     socket.on('room-members', (user) => {
       io.socket.emit('message', sendFormat("room-members", roomManager.roomList[user.rid].members));
