@@ -16,13 +16,14 @@ class RoomActions {
   }
   createUser() {
     if (!this.user) {
-      this.sio.emit("room-createUser", [this.uid]);
       this.mw.registerMessageCallback("room-createUser", (data) => {
         this.user = data.data.user;
       });
+      this.sio.emit("room-createUser", [this.uid]);
     }
   }
   createRoom() {
+    console.log(this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
 }
@@ -44,6 +45,7 @@ class Middleware extends window.EventEmitter {
     this.sio.on('message', (data) => {
       console.log("message:", data);
       if (this.onMessageFunction[data.name]) {
+        // console.log(this.onMessageFunction[data.name]);
         this.onMessageFunction[data.name].forEach((f) => f(data));
       }
     });
@@ -60,8 +62,9 @@ class Middleware extends window.EventEmitter {
   }
 
   registerMessageCallback(messageName, callback) {
-    if (typeof this.onMessageFunction[messageName] !== "Array") this.onMessageFunction[messageName] = [];
+    if (!Array.isArray(this.onMessageFunction[messageName])) this.onMessageFunction[messageName] = [];
     this.onMessageFunction[messageName].push(callback);
+    console.log(2,this.onMessageFunction);
   }
 
   send(data) {
@@ -71,8 +74,6 @@ class Middleware extends window.EventEmitter {
 
   roomAction(actionName, arg) {
     this.roomActions[actionName](arg);
-    // console.log(this.roomActions[actionName]);
-    // this.roomActions[actionName] && this.roomActions[actionName].forEach((f) => f(arg));
   }
 }
 
