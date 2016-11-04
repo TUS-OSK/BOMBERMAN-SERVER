@@ -28,7 +28,7 @@ $(() => {
 
   function addRoomElement(rid, count) {
     $('.room-list').append(`
-      <div class="room">
+      <div class="room" onclick="startGame()">
         <div class="room-id">
           ROOM <span class="room-number">${rid}</span>
         </div>
