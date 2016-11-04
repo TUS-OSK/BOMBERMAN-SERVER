@@ -13,7 +13,6 @@ $(() => {
     // TODO: ボンバーマンの画面に遷移する
   });
 
-
   mw.on('room-createUser', (d) => {
     const roomList = d.data.roomList;
     Object.keys(roomList).forEach((roomID) => {
