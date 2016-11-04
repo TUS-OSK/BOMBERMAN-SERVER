@@ -23,6 +23,12 @@ class Manager {
     };
   }
   join(user, rid){
+    if (this.roomList[rid].members.length >= 8) {
+      throw {
+        name: "RoomCapacityException",
+        message: "this room is full of players. max capacity is 8."
+      };
+    }
     for(let i in this.outOfRoom){
       if(this.outOfRoom[i] == user){
         this.outOfRoom.splice(i, 1);
@@ -117,14 +123,19 @@ function socketExecute() {
     // });
     ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
       socket.on(`room-${methodName}`, (args) => {
-        roomManager[methodName].apply(roomManager, args);
+        let error = null;
+        try {
+          roomManager[methodName].apply(roomManager, args);
+        } catch (e) {
+          error = e;
+        }
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
         console.log(user);
         const response = sendFormat(`room-${methodName}`, {
           roomList: roomManager.roomList,
           outOfRoom: roomManager.outOfRoom,
           user: user
-        });
+        }, error);
         io.sockets.emit('message', response);
         console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
