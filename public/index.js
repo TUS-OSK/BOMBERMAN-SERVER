@@ -10,7 +10,7 @@ $(() => {
     const $room = $(event.currentTarget);
     const roomID = $room.find('.room-number').text();
     mw.roomAction('join', roomID);
-    startGame();
+    startWaiting();
   });
 
   mw.on('room-createUser', (d) => {

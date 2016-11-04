@@ -3,6 +3,17 @@ enchant();
 const SIZE = [48, 48];
 const MATRIX = [11, 11];
 
+function startWaiting(){
+  $(".container").html(`
+    <div class="title">
+      <img src="images/title.png">
+    </div>
+    <div class="waiting">
+      揃うの待ち
+    </div>
+  `);
+}
+
 function startGame(){
     $(".root-wrap").html('');
     var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1]);  // game display size
