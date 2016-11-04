@@ -5,23 +5,23 @@ $(() => {
   $('.create-room button').on('click', () => {
     mw.roomAction('createRoom');
   });
-    $('.room').on('click', (event) => {
-      const $room = $(event.currentTarget);
-      const roomID = $room.find('.room-number').text();
-      mw.roomAction('join', roomID);
-      // TODO: ボンバーマンの画面に遷移する
-    });
+
+  $(document).on('click', '.room', (event) => {
+    const $room = $(event.currentTarget);
+    const roomID = $room.find('.room-number').text();
+    mw.roomAction('join', roomID);
+    // TODO: ボンバーマンの画面に遷移する
+  });
 
 
-
-  mw.registerMessageCallback('room-createUser', (d) => {
+  mw.on('room-createUser', (d) => {
     const roomList = d.data.roomList;
     Object.keys(roomList).forEach((roomID) => {
       const memberCount = roomList[roomID].members.length;
       addRoomElement(roomID, memberCount);
     });
   });
-  mw.registerMessageCallback('room-createRoom', (d) => {
+  mw.on('room-createRoom', (d) => {
     const rid = d.data.user.rid;
     addRoomElement(rid, 1);
   });

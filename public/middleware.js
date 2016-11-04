@@ -16,7 +16,7 @@ class RoomActions {
   }
   createUser() {
     if (!this.user) {
-      this.mw.registerMessageCallback("room-createUser", (data) => {
+      this.mw.on("room-createUser", (data) => {
         this.user = data.data.user;
       });
       this.sio.emit("room-createUser", [this.uid]);
@@ -44,10 +44,7 @@ class Middleware extends window.EventEmitter {
 
     this.sio.on('message', (data) => {
       console.log("message:", data);
-      if (this.onMessageFunction[data.name]) {
-        // console.log(this.onMessageFunction[data.name]);
-        this.onMessageFunction[data.name].forEach((f) => f(data));
-      }
+      this.emit(data.name, data);
     });
 
     this.sio.on('connect', () => {
@@ -59,11 +56,6 @@ class Middleware extends window.EventEmitter {
       console.log('checked rooms');
       this.sio.emit('')
     });
-  }
-
-  registerMessageCallback(messageName, callback) {
-    if (!Array.isArray(this.onMessageFunction[messageName])) this.onMessageFunction[messageName] = [];
-    this.onMessageFunction[messageName].push(callback);
   }
 
   send(data) {

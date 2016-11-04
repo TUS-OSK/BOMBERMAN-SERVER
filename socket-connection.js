@@ -54,7 +54,7 @@ class Manager {
       Object.keys(this.roomList)
         .map((rid) => this.roomList[rid].members.find((user) => user.uid === uid)
         )
-        .find((something) => something)
+        .find((something) => !!something)
     );
   }
 
