@@ -71,8 +71,10 @@ class BombermanActions {
       position: {x:x,y:y}
     });
   }
+  requestMove(x, y) {
+    this.send("request-move");
+  }
 }
-
 
 class Middleware extends window.EventEmitter {
 

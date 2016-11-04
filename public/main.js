@@ -11,7 +11,7 @@ function startGame(){
     var gameFlow = new GameFlow(game);
     game.onload = function(){
         game.keybind(" ".charCodeAt(0), "space");
-        gameFlow.start();
+        gameFlow.start([1, 1]);
     }
     game.start();
 };
@@ -21,7 +21,7 @@ class GameFlow{
         this.game = game;
     }
 
-    start(){
+    start(spawnCoord){
         var playScene = new Scene();
         var map = [
             [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -41,7 +41,8 @@ class GameFlow{
                 playScene.addChild(new Tile(x, y, SIZE, this.game.assets["images/map.png"], cel, [false, true]));
             });
         });
-        var you = new Player(1, 1, SIZE, this.game.assets["images/player.png"], false);
+        var you = new Player(spawnCoord[0], spawnCoord[1], SIZE, this.game.assets["images/player.png"], false);
+        window.mw.bombermanAction("move", spawnCoord[0], spawnCoord[1]);
         playScene.addChild(you);
         this.game.pushScene(playScene);
         you.onMove((prevCoord, nextCoord) => {
