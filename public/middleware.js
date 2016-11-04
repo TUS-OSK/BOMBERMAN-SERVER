@@ -27,6 +27,9 @@ class RoomActions {
     console.log(this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
+  startGame() {
+    this.sio.emit("room-startGame", [this.user]);
+  }
 }
 
 class BombermanActions {

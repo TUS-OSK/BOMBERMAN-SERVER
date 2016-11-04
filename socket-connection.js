@@ -19,7 +19,7 @@ class Manager {
     user.status = memberStatus.playing;
     this.roomList[rid] = {
       members: [user],
-      watchers: [],
+      waiting: true,
     };
   }
   join(user, rid, socket){
@@ -64,7 +64,9 @@ class Manager {
         .find((something) => !!something)
     );
   }
-
+  startGame(rid){
+    this.roomList[rid].waiting = false;
+  }
 }
 
 const roomManager = new Manager();
@@ -122,7 +124,7 @@ function socketExecute() {
     //   console.log('enter', data);
     //   if(data.rid === null) outOfRoom.push(data.uid);
     // });
-    ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
+    ["createUser","createRoom","join","leave","remove","startGame"].forEach((methodName) => {
       socket.on(`room-${methodName}`, (args) => {
         let error = null;
         args && args.push(socket);
