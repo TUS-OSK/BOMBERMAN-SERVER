@@ -41,37 +41,86 @@ class GameFlow{
                 playScene.addChild(new Tile(x, y, SIZE, this.game.assets["images/map.png"], cel, [false, true]));
             });
         });
+        // you
         var you = new Player(spawnCoord[0], spawnCoord[1], SIZE, this.game.assets["images/player.png"], false);
-        window.mw.bombermanAction("move", spawnCoord[0], spawnCoord[1]);
         playScene.addChild(you);
-        this.game.pushScene(playScene);
-        you.onMove((prevCoord, nextCoord) => {
-        	var currentBomb = mapData.exist(prevCoord, "Bomb");
-        	if(currentBomb){
-        		currentBomb.forEach((b) => {
-        			b.collision = true;
-        		});
-        	}
+        you.onMoveEnd((prevCoord, nextCoord) => {
+            // console.log(prevCoord, nextCoord);
+            var currentBomb = mapData.exist(prevCoord, "Bomb");
+            if(currentBomb){
+                currentBomb.forEach((b) => {
+                    b.collision = true;
+                });
+            }
         });
+        you.onMoveStart((prevCoord, nextCoord) => {
+            // console.log(prevCoord, nextCoord);
+            console.log(new Date().getSeconds(), nextCoord[0], nextCoord[1]);
+            window.mw.bombermanAction("move", nextCoord[0], nextCoord[1]);
+        });
+        // others
+        var others = [];
+        // Socket Event
+        console.log(window.mw.uid);
+        window.mw.on("move", (data) => {
+            if(data.userID !== window.mw.uid){
+                var indexOther = others.map((v) => v.userID).indexOf(data.userID);
+                if(indexOther === -1){
+                    var other = new Player(data.data.position.x, data.data.position.y, SIZE, this.game.assets["images/player.png"], false);
+                    other.userID = data.userID;
+                    others.push(other);
+                    playScene.addChild(other);
+                }else{
+                    var other = others[indexOther];
+                    other.dist = [data.data.position.x, data.data.position.y];
+                    console.log(new Date().getSeconds(), data.data.position.x, data.data.position.y);
+                }
+            }
+        });
+        window.mw.on("requestmove", (data) => {
+            if(data.userID !== window.mw.uid){
+                window.mw.bombermanAction("move", you.cx, you.cy);
+            }
+        });
+        window.mw.on("putBomb", (data) => {
+
+        });
+        window.mw.bombermanAction("requestmove");
+        setTimeout(() => {
+            var  coords = [[1, 1], [9, 9], [9, 1], [1, 9]];
+            for(var i = 0; i < coords.length; i++){
+                if(!(mapData.exist(coords[i], "Player"))){
+                    you.updateCoordinate(coords[i][0], coords[i][1]);
+                    window.mw.bombermanAction("move", coords[i][0], coords[i][1]);
+                    break;
+                }
+            }
+            // Add Scene
+            console.log(others);
+            this.game.pushScene(playScene);
+        }, 1000);
+
+        // Frame Event
         playScene.addEventListener("enterframe", () => {
             var moveVector = [0, 0];
             // move sequence --------------
             if(this.game.input.space){
-            	if(!(mapData.exist([you.cx, you.cy], "Bomb"))){
-            		var bomb = new Bomb(you.cx, you.cy, SIZE, this.game.assets["images/bomb.png"], false, 1, playScene);
-            		playScene.addChild(bomb);
-	                bomb.finalize(() => {
-	                	playScene.removeChild(bomb);
-	                });
-	                bomb.detonate((flameCx, flameCy) => {
-	                	var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
-	                	playScene.addChild(flame);
-	                	flame.finalize(() => {
-	                		playScene.removeChild(flame);
-	                	});
-	                });
-	                console.log(you.cx, you.cy, "put a bomb");
-	            }
+                if(!(mapData.exist([you.cx, you.cy], "Bomb"))){
+                    var bomb = new Bomb(you.cx, you.cy, SIZE, this.game.assets["images/bomb.png"], false, 1, playScene);
+                    playScene.addChild(bomb);
+                    window.mw.bombermanAction("putBomb", you.cx, you.cy, SIZE);
+                    bomb.finalize(() => {
+                        playScene.removeChild(bomb);
+                    });
+                    bomb.detonate((flameCx, flameCy) => {
+                        var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
+                        playScene.addChild(flame);
+                        flame.finalize(() => {
+                            playScene.removeChild(flame);
+                        });
+                    });
+                    console.log(you.cx, you.cy, "put a bomb");
+                }
             }else if(this.game.input.up){
                 moveVector = [0, -1];
             }else if(this.game.input.right){
@@ -82,12 +131,20 @@ class GameFlow{
                 moveVector = [-1, 0];
             }
             you.updateCoordinate(you.cx + moveVector[0], you.cy + moveVector[1]);
+            others.forEach((other) => {
+                if (other.dist) {
+                    other.updateCoordinate(other.dist[0], other.dist[1]);
+                    other.dist = null;
+                } else {
+                    other.updateCoordinate(other.cx, other.cy);
+                }
+            });
             // check sequence ------------
             you.occupied((cx, cy) => {
-            	if(mapData.exist([cx, cy], "Flame")){
-            		// alert("You Died!");
-            		console.log("You Died!");
-            	}
+                if(mapData.exist([cx, cy], "Flame")){
+                    // alert("You Died!");
+                    console.log("You Died!");
+                }
             });
         });
     }
@@ -108,7 +165,7 @@ class MapData{
     update(oldCoordinate, newCoordinate, instance){
     	// if (oldCoordinate[0] === newCoordinate[0] && oldCoordinate[1] === newCoordinate[1]) { return; }
         // if(!(instance instanceof Collider)){ throw new Error("instance should be a sub class of Collision!"); }
-        console.log(oldCoordinate, newCoordinate, instance.name());
+        // console.log(oldCoordinate, newCoordinate, instance.name(), instance.userID);
         if(oldCoordinate !== null && oldCoordinate[0] !== null && oldCoordinate[1] !== null){
             const index = this.map[oldCoordinate[0]][oldCoordinate[1]].indexOf(instance);
             this.map[oldCoordinate[0]][oldCoordinate[1]].splice(index, 1);
@@ -267,17 +324,29 @@ var Player = Class.create(Collider, {
         this.image = image;
         this.frame = 0;
         this.current = [null, null];
-        this.onMoveEvents = [];
+        this.onMoveEndEvents = [];
+        this.onMoveStartEvents = [];
+        this.userID = null;
     },
 
-    onMove(cb) {
-    	this.onMoveEvents.push(cb);
+    onMoveEnd(cb) {
+    	this.onMoveEndEvents.push(cb);
+    },
+
+    onMoveStart(cb) {
+        this.onMoveStartEvents.push(cb);
     },
 
     updateCoordinate(cx, cy){ // call in each frame
-        var moveCoords = Collider.prototype.updateCoordinate.call(this, cx, cy, true);
-        if (moveCoords) {
-        	this.onMoveEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1]); });
+        var isContinuous =  Math.abs(this.cx - cx) + Math.abs(this.cy - cy) <= 1;
+        var wasMoving = this.isMoving();
+        var moveCoords = Collider.prototype.updateCoordinate.call(this, cx, cy, isContinuous);
+        if (wasMoving !== this.isMoving()) {
+            if (this.isMoving()) {
+            	this.onMoveStartEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1]); });
+            } else {
+                this.onMoveEndEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1]); });
+            }
         }
     },
 

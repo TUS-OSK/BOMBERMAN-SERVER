@@ -71,8 +71,8 @@ class BombermanActions {
       position: {x:x,y:y}
     });
   }
-  requestMove(x, y) {
-    this.send("request-move");
+  requestmove() {
+    this.send("requestmove");
   }
 }
 
@@ -81,7 +81,7 @@ class Middleware extends window.EventEmitter {
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://localhost:4000/');
+    this.sio = io.connect('http://10.0.1.13:4000/');
 
     this.onMessageFunction = {};
 
