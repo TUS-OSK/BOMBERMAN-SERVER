@@ -64,7 +64,6 @@ class Middleware extends window.EventEmitter {
   registerMessageCallback(messageName, callback) {
     if (!Array.isArray(this.onMessageFunction[messageName])) this.onMessageFunction[messageName] = [];
     this.onMessageFunction[messageName].push(callback);
-    console.log(2,this.onMessageFunction);
   }
 
   send(data) {
