@@ -10,6 +10,19 @@ window.mw = new window.Middleware();
   });
 
   $('.create-room button').click(() => {
+    mw.registerMessageCallback("room-createRoom", (d) => {
+      const rid = d.data.user.rid;
+      $('.room-list').append(`
+        <div class="room">
+          <div class="room-id">
+            ROOM <span class="room-number">${rid}</span>
+          </div>
+          <div class="room-members">
+            member: <span class="room-members-number">1</span>/8
+          </div>
+        </div>
+      `);
+    });
     mw.roomAction('createRoom');
   });
 }

@@ -35,15 +35,17 @@ class Middleware extends window.EventEmitter {
     this.uid = Math.random().toString(36).slice(-8);
     this.sio = io.connect('http://localhost:4000/');
 
-    this.onMessageFunction = {a:1};
+    this.onMessageFunction = {};
 
     this.roomActions = new RoomActions(this);
     this.roomActions.createUser();
 
 
     this.sio.on('message', (data) => {
-      console.log("message:",data);
-      this.onMessageFunction[data.name] && this.onMessageFunction[data.name](data);
+      console.log("message:", data);
+      if (this.onMessageFunction[data.name]) {
+        this.onMessageFunction[data.name].forEach((f) => f(data));
+      }
     });
 
     this.sio.on('connect', () => {
@@ -58,7 +60,8 @@ class Middleware extends window.EventEmitter {
   }
 
   registerMessageCallback(messageName, callback) {
-    this.onMessageFunction[messageName] = callback;
+    if (typeof this.onMessageFunction[messageName] !== "Array") this.onMessageFunction[messageName] = [];
+    this.onMessageFunction[messageName].push(callback);
   }
 
   send(data) {
@@ -68,6 +71,8 @@ class Middleware extends window.EventEmitter {
 
   roomAction(actionName, arg) {
     this.roomActions[actionName](arg);
+    // console.log(this.roomActions[actionName]);
+    // this.roomActions[actionName] && this.roomActions[actionName].forEach((f) => f(arg));
   }
 }
 

@@ -118,7 +118,8 @@ function socketExecute() {
     ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
       socket.on(`room-${methodName}`, (args) => {
         roomManager[methodName].apply(roomManager, args);
-        const user = typeof args[0] === "User" ? args[0] : roomManager.findUser(args[0]);
+        const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
+        console.log(user);
         const response = sendFormat(`room-${methodName}`, {
           roomList: roomManager.roomList,
           outOfRoom: roomManager.outOfRoom,
