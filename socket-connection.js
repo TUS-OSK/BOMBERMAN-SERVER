@@ -13,7 +13,7 @@ class Manager {
   createUser(uid){
     this.outOfRoom.push(new User(uid));
   }
-  createRoom(user, socket){
+  createRoom(user){
     const rid = Math.random().toString(36).slice(-8);
     user.rid = rid;
     user.status = memberStatus.playing;
@@ -21,9 +21,8 @@ class Manager {
       members: [user],
       watchers: [],
     };
-    socket.join(rid);
   }
-  join(user, rid){
+  join(user, rid, socket){
     if (this.roomList[rid].members.length >= 8) {
       throw {
         name: "RoomCapacityException",
@@ -41,6 +40,7 @@ class Manager {
       user.rid = rid;
     }
     user.status = memberStatus.playing;
+    socket.join(rid);
   }
   leave(user){
     for(let i in this.roomList[user.rid].members){
@@ -132,18 +132,21 @@ function socketExecute() {
           error = e;
         }
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
-        console.log(user);
+        // console.log(user);
         const response = sendFormat(`room-${methodName}`, {
           roomList: roomManager.roomList,
           outOfRoom: roomManager.outOfRoom,
           user: user
         }, error);
         io.sockets.emit('message', response);
-        console.log(`receive room-${methodName}:`,args," ---> ",response.data);
+        // console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
     });
     socket.on('bomberman-main', (data) => {
+      console.log(data)
       if (data.roomID) {
+              console.log(14)
+
         io.to(data.roomID).emit('bomberman-main', data);
       }
     })
