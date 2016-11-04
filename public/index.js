@@ -10,9 +10,8 @@ $(() => {
     const $room = $(event.currentTarget);
     const roomID = $room.find('.room-number').text();
     mw.roomAction('join', roomID);
-    // TODO: ボンバーマンの画面に遷移する
+    startGame();
   });
-
 
   mw.on('room-createUser', (d) => {
     const roomList = d.data.roomList;
@@ -28,7 +27,7 @@ $(() => {
 
   function addRoomElement(rid, count) {
     $('.room-list').append(`
-      <div class="room">
+      <div class="room"">
         <div class="room-id">
           ROOM <span class="room-number">${rid}</span>
         </div>
