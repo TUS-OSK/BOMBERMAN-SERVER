@@ -14,6 +14,9 @@ class RoomActions {
   leave() {
     this.sio.emit("room-leave", [this.user]);
   }
+  members() {
+    this.sio.emit("room-members", [this.user]);
+  }
   createUser() {
     if (!this.user) {
       this.mw.on("room-createUser", (data) => {

@@ -137,8 +137,12 @@ function socketExecute() {
           user: user
         }, error);
         io.sockets.emit('message', response);
-        console.log(`receive room-${methodName}:`,args," ---> ",response.data);
+        // console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
+    });
+
+    socket.on('room-members', (user) => {
+      io.socket.emit('message', sendFormat("room-members", roomManager.roomList[user.rid].members));
     });
 
     socket.on('message', function(data) {
