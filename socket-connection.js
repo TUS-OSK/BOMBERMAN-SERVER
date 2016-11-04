@@ -13,7 +13,7 @@ class Manager {
   createUser(uid){
     this.outOfRoom.push(new User(uid));
   }
-  createRoom(user){
+  createRoom(user, socket){
     const rid = Math.random().toString(36).slice(-8);
     user.rid = rid;
     user.status = memberStatus.playing;
@@ -21,6 +21,7 @@ class Manager {
       members: [user],
       watchers: [],
     };
+    socket.join(rid);
   }
   join(user, rid){
     if (this.roomList[rid].members.length >= 8) {
@@ -124,6 +125,7 @@ function socketExecute() {
     ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
       socket.on(`room-${methodName}`, (args) => {
         let error = null;
+        args && args.push(socket);
         try {
           roomManager[methodName].apply(roomManager, args);
         } catch (e) {
@@ -140,6 +142,11 @@ function socketExecute() {
         console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
     });
+    socket.on('bomberman-main', (data) => {
+      if (data.roomID) {
+        io.to(data.roomID).emit('bomberman-main', data);
+      }
+    })
 
     socket.on('message', function(data) {
       io.sockets.emit('message', data);

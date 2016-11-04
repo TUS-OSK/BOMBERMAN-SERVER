@@ -28,6 +28,18 @@ class RoomActions {
   }
 }
 
+class BombermanActions {
+  constructor(mw) {
+    this.uid = mw.uid;
+    this.sio = mw.sio;
+    this.mw = mw;
+    this.roomID = null;
+  }
+  putBomb(x,y) {
+    this.sio.emit("bomberman-putBomb", [this.uid,this.roomID,x,y]);
+  }
+}
+
 
 class Middleware extends window.EventEmitter {
 
