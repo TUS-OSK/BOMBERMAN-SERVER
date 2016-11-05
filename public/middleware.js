@@ -57,9 +57,9 @@ class BombermanActions {
       fireLength : fireLength
     });
   }
-  move(x,y) {
+  move(from, to) {
     this.send("move", {
-      position: {x:x,y:y}
+      position: {from:from,to:to}
     });
   }
   death() {
@@ -74,12 +74,12 @@ class BombermanActions {
   requestmove() {
     this.send("requestmove");
   }
-  handshake() {
-    this.send("handshake");
-  }
-  handshakeresponse() {
-    this.send("handshakeresponse");
-  }
+  // handshake() {
+  //   this.send("handshake");
+  // }
+  // handshakeresponse() {
+  //   this.send("handshakeresponse");
+  // }
 }
 
 class Middleware extends window.EventEmitter {
@@ -87,7 +87,7 @@ class Middleware extends window.EventEmitter {
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://10.0.1.13:4000/');
+    this.sio = io.connect('http://10.32.222.244:4000/');
     this.rid = null;
     this.members = [];
 
@@ -121,9 +121,8 @@ class Middleware extends window.EventEmitter {
       this.bombermanActions.roomID = data.data.user.rid;
       this.rid = data.data.user.rid;
       this.members = data.data.roomList[this.rid].members;
-    })
+    });
   }
-
 
   send(data) {
     data.uid = this.uid;
