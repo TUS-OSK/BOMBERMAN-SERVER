@@ -82,6 +82,7 @@ class GameFlow{
         console.log(window.mw.uid);
         window.mw.on("move", (data) => {
             if(data.userID !== window.mw.uid){
+                console.log('move', data.userID);
                 var indexOther = others.map((v) => v.userID).indexOf(data.userID);
                 if(indexOther === -1){
                     var other = new Player(data.data.position.to[0], data.data.position.to[1], SIZE, this.game.assets["images/player.png"], false);
@@ -116,19 +117,22 @@ class GameFlow{
         // });
         window.mw.on("requestmove", (data) => {
             if(data.userID !== window.mw.uid){
+                console.log('requestmove from', data.userID);
                 window.mw.bombermanAction("move", null, [you.cx, you.cy]);
             }
         });
         window.mw.on("putBomb", (data) => {
             setBomb(data.data.position.x, data.data.position.y);
         });
+        window.mw.bombermanAction('requestmove');
         console.log('requestmove fired: ', window.mw.uid);
-        var coords = [[1, 1], [9, 9], [9, 1], [1, 9]];
-        var index = window.mw.members.map((v) => v.uid).indexOf(window.mw.uid);
-        if (index === -1) { throw new Error('Fatal error... well done.'); }
-        index = index % 4;
-        you.updateCoordinate(coords[index][0], coords[index][1], false);
-        window.mw.bombermanAction("move", null, coords[index]);
+        // var coords = [[1, 1], [9, 9], [9, 1], [1, 9]];
+        // var index = window.mw.members.map((v) => v.uid).indexOf(window.mw.uid);
+        // if (index === -1) { throw new Error('Fatal error... well done.'); }
+        // index = index % 4;
+        // you.updateCoordinate(coords[index][0], coords[index][1], false);
+        // window.mw.bombermanAction("move", null, coords[index]);
+        window.mw.bombermanAction("move", null, [1,1]);
 
         // Add Scene
         console.log(others);

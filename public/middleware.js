@@ -7,6 +7,7 @@ class RoomActions {
     console.log("uid", this.uid);
   }
   join(roomID) {
+    console.log("room-join send", [this.user, roomID]);
     this.sio.emit("room-join", [this.user, roomID]);
   }
   remove() {
@@ -18,17 +19,21 @@ class RoomActions {
   createUser() {
     if (!this.user) {
       this.mw.on("room-createUser", (data) => {
-        this.user = data.data.user;
+        if (this.user === null) {
+          this.user = data.data.user;
+        }
         this.mw.emit('room-update', data);
       });
       this.sio.emit("room-createUser", [this.uid]);
       this.mw.on('room-join', (data) => {
-        this.user = data.data.user;
+        // if(this.user == null){
+        //   this.user = data.data.user;
+        // }
       });
     }
   }
   createRoom() {
-    console.log(this.user);
+    console.log('createroom send',this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
   startGame() {
@@ -52,6 +57,9 @@ class BombermanActions {
       data: data
     };
   }
+  // send(name, data) {
+  //   this.sio.emit('message', this.sendFormat(name, data));
+  // }
   send(name, data) {
     this.sio.emit("bomberman-main", this.sendFormat(name, data));
   }
@@ -91,7 +99,7 @@ class Middleware extends window.EventEmitter {
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://10.32.222.244:4000/');
+    this.sio = io.connect('http://10.32.210.109:4000/');
     this.rid = null;
     this.members = [];
 
@@ -116,21 +124,12 @@ class Middleware extends window.EventEmitter {
       console.log('checked rooms');
       this.sio.emit('')
     });
-    this.sio.on('bomberman-main', (data) => {
-      // console.log("data:",data)
-      this.emit(data.name, data);
-    });
 
     this.on("room-join", (data) => {
       this.bombermanActions.roomID = data.data.user.rid;
       this.rid = data.data.user.rid;
       this.members = data.data.roomList[this.rid].members;
     });
-  }
-
-  send(data) {
-    data.uid = this.uid;
-    this.sio.emit('message', data);
   }
 
   roomAction(actionName, arg) {

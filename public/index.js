@@ -40,6 +40,8 @@ $(() => {
     const rid = d.data.user.rid;
     currentRid = rid;
     addRoomElement(rid, 1);
+    console.log(d.data.user.uid,mw.uid);
+
     if (d.data.user.uid === mw.uid) {
       startWaiting(rid);
       mw.roomAction('join', rid);

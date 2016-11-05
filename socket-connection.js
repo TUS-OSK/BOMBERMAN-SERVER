@@ -3,8 +3,6 @@ var http = require('http');
 // var socketio = require('socket.io');
 var server = http.createServer();
 
-console.log("A");
-
 class Manager {
   constructor(){
     // this.rid = Math.random().toString(36).slice(-8);
@@ -23,7 +21,7 @@ class Manager {
       waiting: true,
     };
   }
-  join(user, rid, sioid){
+  join(user, rid, sioid, socket){
     console.log("join", this.roomList[rid], sioid);
     if (this.roomList[rid].members.length >= 8) throw {
       name: "RoomCapacityException",
@@ -42,6 +40,7 @@ class Manager {
       user.rid = rid;
     }
     user.status = memberStatus.playing;
+    socket.join(rid);
   }
   // leave(user){
   //   this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
@@ -156,12 +155,13 @@ function socketExecute() {
       // });
       socket.on(`room-${methodName}`, (args) => {
         let error = null;
-        args.push(socket.id);
+        args.push(socket.id, socket);
         try {
           roomManager[methodName].apply(roomManager, args);
         } catch (e) {
           error = e;
         }
+        methodName == 'createRoom' && console.log('createroom',args[0], roomManager.findUser(args[0]))
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
         // console.log(user);
         const response = sendFormat(`room-${methodName}`, {
@@ -172,6 +172,17 @@ function socketExecute() {
         io.sockets.emit('message', response);
         // console.log(`receive room-${methodName}:`,args," ---> ",response );
       });
+    });
+
+    socket.on('bomberman-main', (data) => {
+      console.log(data)
+      if (data.roomID) {
+        io.to(data.roomID).emit('bomberman-main', data);
+      }
+    })
+
+    socket.on('room-members', (user) => {
+      io.socket.emit('message', sendFormat("room-members", roomManager.roomList[user.rid].members));
     });
 
     socket.on('message', function(data) {
