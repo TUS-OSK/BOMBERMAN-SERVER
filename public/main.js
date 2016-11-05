@@ -44,7 +44,7 @@ class GameFlow{
         // you
         var you = new Player(spawnCoord[0], spawnCoord[1], SIZE, this.game.assets["images/player.png"], false);
         playScene.addChild(you);
-        you.onMoveEnd((prevCoord, nextCoord) => {
+        you.onMoveEnd((prevCoord, nextCoord, isContinuous) => {
             // console.log(prevCoord, nextCoord);
             var currentBomb = mapData.exist(prevCoord, "Bomb");
             if(currentBomb){
@@ -52,11 +52,12 @@ class GameFlow{
                     b.collision = true;
                 });
             }
+            console.log('moveend', nextCoord, isContinuous);
         });
-        you.onMoveStart((prevCoord, nextCoord) => {
+        you.onMoveStart((prevCoord, nextCoord, isContinuous) => {
             // console.log(prevCoord, nextCoord);
-            console.log(new Date().getSeconds(), nextCoord[0], nextCoord[1]);
-            window.mw.bombermanAction("move", nextCoord[0], nextCoord[1]);
+            console.log('movestart', nextCoord, isContinuous);
+            window.mw.bombermanAction("move", prevCoord, nextCoord);
         });
         // others
         var others = [];
@@ -66,20 +67,26 @@ class GameFlow{
             if(data.userID !== window.mw.uid){
                 var indexOther = others.map((v) => v.userID).indexOf(data.userID);
                 if(indexOther === -1){
-                    var other = new Player(data.data.position.x, data.data.position.y, SIZE, this.game.assets["images/player.png"], false);
+                    var other = new Player(data.data.position.to[0], data.data.position.to[1], SIZE, this.game.assets["images/player.png"], false);
                     other.userID = data.userID;
+                    other.onMoveEnd((prevCoord, nextCoord, isContinuous) => {
+                        console.log('other moveend', nextCoord, isContinuous);
+                    });
+                    other.onMoveStart((prevCoord, nextCoord, isContinuous) => {
+                        console.log('other movestart', nextCoord, isContinuous);
+                    });
                     others.push(other);
                     playScene.addChild(other);
                 }else{
                     var other = others[indexOther];
-                    other.dist = [data.data.position.x, data.data.position.y];
-                    console.log(new Date().getSeconds(), data.data.position.x, data.data.position.y);
+                    other.move = data.data.position;
+                    console.log(new Date().getSeconds(), data.data.position.from, data.data.position.to);
                 }
             }
         });
         window.mw.on("requestmove", (data) => {
             if(data.userID !== window.mw.uid){
-                window.mw.bombermanAction("move", you.cx, you.cy);
+                window.mw.bombermanAction("move", null, [you.cx, you.cy]);
             }
         });
         window.mw.on("putBomb", (data) => {
@@ -90,8 +97,8 @@ class GameFlow{
             var  coords = [[1, 1], [9, 9], [9, 1], [1, 9]];
             for(var i = 0; i < coords.length; i++){
                 if(!(mapData.exist(coords[i], "Player"))){
-                    you.updateCoordinate(coords[i][0], coords[i][1]);
-                    window.mw.bombermanAction("move", coords[i][0], coords[i][1]);
+                    you.updateCoordinate(coords[i][0], coords[i][1], false);
+                    window.mw.bombermanAction("move", null, coords[i]);
                     break;
                 }
             }
@@ -130,13 +137,20 @@ class GameFlow{
             }else if(this.game.input.left){
                 moveVector = [-1, 0];
             }
-            you.updateCoordinate(you.cx + moveVector[0], you.cy + moveVector[1]);
+            you.updateCoordinate(you.cx + moveVector[0], you.cy + moveVector[1], true);
             others.forEach((other) => {
-                if (other.dist) {
-                    other.updateCoordinate(other.dist[0], other.dist[1]);
-                    other.dist = null;
+                if (other.move) {
+                    if (other.move.from !== null && (other.move.from[0] !== other.cx || other.move.from[1] !== other.cy)) {
+                        other.updateCoordinate(other.move.from[0], other.move.from[1], false);
+                    }
+                    if (other.move.from === null) {
+                        other.updateCoordinate(other.move.to[0], other.move.to[1], false);
+                    } else {
+                        other.updateCoordinate(other.move.to[0], other.move.to[1], true);
+                    }
+                    other.move = null;
                 } else {
-                    other.updateCoordinate(other.cx, other.cy);
+                    other.updateCoordinate(other.cx, other.cy, true);
                 }
             });
             // check sequence ------------
@@ -266,6 +280,8 @@ var Cell = Class.create(Sprite, {
             }
         }else{
             this._updateCellCoordinate(cx, cy);
+            this.current[0] = null;
+            this.current[1] = null;
             return [[cx, cy], [this.cx, this.cy]];
         }
     },
@@ -337,15 +353,15 @@ var Player = Class.create(Collider, {
         this.onMoveStartEvents.push(cb);
     },
 
-    updateCoordinate(cx, cy){ // call in each frame
-        var isContinuous =  Math.abs(this.cx - cx) + Math.abs(this.cy - cy) <= 1;
+    updateCoordinate(cx, cy, isContinuous){ // call in each frame
+        // var isContinuous =  Math.abs(this.cx - cx) + Math.abs(this.cy - cy) <= 1;
         var wasMoving = this.isMoving();
         var moveCoords = Collider.prototype.updateCoordinate.call(this, cx, cy, isContinuous);
         if (wasMoving !== this.isMoving()) {
             if (this.isMoving()) {
-            	this.onMoveStartEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1]); });
+            	this.onMoveStartEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1], isContinuous); });
             } else {
-                this.onMoveEndEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1]); });
+                this.onMoveEndEvents.forEach((cb) => { cb(moveCoords[0], moveCoords[1], isContinuous); });
             }
         }
     },
