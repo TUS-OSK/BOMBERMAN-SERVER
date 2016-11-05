@@ -3,6 +3,7 @@ var http = require('http');
 // var socketio = require('socket.io');
 var server = http.createServer();
 
+console.log("A");
 
 class Manager {
   constructor(){

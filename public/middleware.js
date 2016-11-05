@@ -36,18 +36,70 @@ class RoomActions {
   }
 }
 
+class BombermanActions {
+  constructor(mw) {
+    this.uid = mw.uid;
+    this.sio = mw.sio;
+    this.mw = mw;
+    this.roomID = null;
+  }
+
+  sendFormat(name, data) {
+    return {
+      name: name,
+      userID: this.uid,
+      roomID: this.roomID,
+      data: data
+    };
+  }
+  send(name, data) {
+    this.sio.emit("bomberman-main", this.sendFormat(name, data));
+  }
+  putBomb(x,y,fireLength) {
+    this.send("putBomb", {
+      position: {x:x,y:y},
+      fireLength : fireLength
+    });
+  }
+  move(from, to) {
+    this.send("move", {
+      position: {from:from,to:to}
+    });
+  }
+  death() {
+    this.send("death", {
+    });
+  }
+  spawn(x,y) {
+    this.send("spawn", {
+      position: {x:x,y:y}
+    });
+  }
+  requestmove() {
+    this.send("requestmove");
+  }
+  // handshake() {
+  //   this.send("handshake");
+  // }
+  // handshakeresponse() {
+  //   this.send("handshakeresponse");
+  // }
+}
 
 class Middleware extends window.EventEmitter {
 
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://localhost:4000/');
+    this.sio = io.connect('http://10.32.222.244:4000/');
+    this.rid = null;
+    this.members = [];
 
     this.onMessageFunction = {};
 
     this.roomActions = new RoomActions(this);
     this.roomActions.createUser();
+    this.bombermanActions = new BombermanActions(this);
 
 
     this.sio.on('message', (data) => {
@@ -64,6 +116,16 @@ class Middleware extends window.EventEmitter {
       console.log('checked rooms');
       this.sio.emit('')
     });
+    this.sio.on('bomberman-main', (data) => {
+      // console.log("data:",data)
+      this.emit(data.name, data);
+    });
+
+    this.on("room-join", (data) => {
+      this.bombermanActions.roomID = data.data.user.rid;
+      this.rid = data.data.user.rid;
+      this.members = data.data.roomList[this.rid].members;
+    });
   }
 
   send(data) {
@@ -73,6 +135,9 @@ class Middleware extends window.EventEmitter {
 
   roomAction(actionName, arg) {
     this.roomActions[actionName](arg);
+  }
+  bombermanAction(actionName,...arg) {
+    this.bombermanActions[actionName](...arg);
   }
 }
 
