@@ -11,7 +11,9 @@ function startGame(){
     var gameFlow = new GameFlow(game);
     game.onload = function(){
         game.keybind(" ".charCodeAt(0), "space");
-        gameFlow.start([1, 1]);
+        // setTimeout(() => {
+            gameFlow.start([1, 1]);
+        // }, Math.random(5000));
     }
     game.start();
 };
@@ -55,9 +57,24 @@ class GameFlow{
         });
         you.onMoveStart((prevCoord, nextCoord) => {
             // console.log(prevCoord, nextCoord);
-            console.log(new Date().getSeconds(), nextCoord[0], nextCoord[1]);
+            console.log("You: ", Date.now(), nextCoord[0], nextCoord[1]);
             window.mw.bombermanAction("move", nextCoord[0], nextCoord[1]);
         });
+        // bomb
+        var setBomb = (cx, cy) => {
+            var bomb = new Bomb(cx, cy, SIZE, this.game.assets["images/bomb.png"], false, 1, playScene);
+            playScene.addChild(bomb);
+            bomb.finalize(() => {
+                playScene.removeChild(bomb);
+            });
+            bomb.detonate((flameCx, flameCy) => {
+                var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
+                playScene.addChild(flame);
+                flame.finalize(() => {
+                    playScene.removeChild(flame);
+                });
+            });
+        };
         // others
         var others = [];
         // Socket Event
@@ -66,26 +83,42 @@ class GameFlow{
             if(data.userID !== window.mw.uid){
                 var indexOther = others.map((v) => v.userID).indexOf(data.userID);
                 if(indexOther === -1){
+                    console.log('user added: ', data.userID, data.data.position);
                     var other = new Player(data.data.position.x, data.data.position.y, SIZE, this.game.assets["images/player.png"], false);
                     other.userID = data.userID;
                     others.push(other);
                     playScene.addChild(other);
                 }else{
+                    console.log('user move: ', data.userID, data.data.position, Date.now());
                     var other = others[indexOther];
                     other.dist = [data.data.position.x, data.data.position.y];
-                    console.log(new Date().getSeconds(), data.data.position.x, data.data.position.y);
+                    console.log("Other: ", Date.now(), data.data.position.x, data.data.position.y, data.userID);
                 }
             }
         });
+        var handshaked = [];   // UserID
+        window.mw.on("handshake", (data) => {
+            if(data.userID !== window.mw.uid){
+                console.log('handshake from: ', data.userID, Date.now());
+                window.mw.bombermanAction("handshakeresponse", you.cx, you.cy);
+            }
+        });
+        // window.mw.on("handshakeresponse", (data) => {
+        //     if(data.userID !== window.mw.uid){
+        //         console.log('handshakeresponse from: ', data.userID, Date.now());
+        //         handshaked.push(data.userID);
+        //     }
+        // });
         window.mw.on("requestmove", (data) => {
             if(data.userID !== window.mw.uid){
                 window.mw.bombermanAction("move", you.cx, you.cy);
             }
         });
         window.mw.on("putBomb", (data) => {
-
+            setBomb(data.data.position.x, data.data.position.y);
         });
         window.mw.bombermanAction("requestmove");
+        console.log('requestmove fired: ', window.mw.uid);
         setTimeout(() => {
             var  coords = [[1, 1], [9, 9], [9, 1], [1, 9]];
             for(var i = 0; i < coords.length; i++){
@@ -106,20 +139,9 @@ class GameFlow{
             // move sequence --------------
             if(this.game.input.space){
                 if(!(mapData.exist([you.cx, you.cy], "Bomb"))){
-                    var bomb = new Bomb(you.cx, you.cy, SIZE, this.game.assets["images/bomb.png"], false, 1, playScene);
-                    playScene.addChild(bomb);
-                    window.mw.bombermanAction("putBomb", you.cx, you.cy, SIZE);
-                    bomb.finalize(() => {
-                        playScene.removeChild(bomb);
-                    });
-                    bomb.detonate((flameCx, flameCy) => {
-                        var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
-                        playScene.addChild(flame);
-                        flame.finalize(() => {
-                            playScene.removeChild(flame);
-                        });
-                    });
-                    console.log(you.cx, you.cy, "put a bomb");
+                    setBomb(you.cx, you.cy);
+                    window.mw.bombermanAction("putBomb", you.cx, you.cy, 1);
+                    // console.log(you.cx, you.cy, "put a bomb");
                 }
             }else if(this.game.input.up){
                 moveVector = [0, -1];

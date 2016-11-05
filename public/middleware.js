@@ -51,10 +51,10 @@ class BombermanActions {
   send(name, data) {
     this.sio.emit("bomberman-main", this.sendFormat(name, data));
   }
-  putBomb(x,y,size) {
+  putBomb(x,y,fireLength) {
     this.send("putBomb", {
       position: {x:x,y:y},
-      size : size
+      fireLength : fireLength
     });
   }
   move(x,y) {
@@ -74,6 +74,12 @@ class BombermanActions {
   requestmove() {
     this.send("requestmove");
   }
+  handshake() {
+    this.send("handshake");
+  }
+  handshakeresponse() {
+    this.send("handshakeresponse");
+  }
 }
 
 class Middleware extends window.EventEmitter {
@@ -82,6 +88,8 @@ class Middleware extends window.EventEmitter {
     super();
     this.uid = Math.random().toString(36).slice(-8);
     this.sio = io.connect('http://10.0.1.13:4000/');
+    this.rid = null;
+    this.members = [];
 
     this.onMessageFunction = {};
 
@@ -105,12 +113,14 @@ class Middleware extends window.EventEmitter {
       this.sio.emit('')
     });
     this.sio.on('bomberman-main', (data) => {
-      console.log("data:",data)
+      // console.log("data:",data)
       this.emit(data.name, data);
     });
 
     this.on("room-join", (data) => {
       this.bombermanActions.roomID = data.data.user.rid;
+      this.rid = data.data.user.rid;
+      this.members = data.data.roomList[this.rid].members;
     })
   }
 
