@@ -1,4 +1,5 @@
 window.mw = new window.Middleware();
+let currentRid = null;
 $(() => {
   const mw = window.mw;
 
@@ -9,12 +10,27 @@ $(() => {
   $(document).on('click', '.room', (event) => {
     const $room = $(event.currentTarget);
     const roomID = $room.find('.room-number').text();
+    currentRid = roomID;
     mw.roomAction('join', roomID);
-    startWaiting();
+    startWaiting(roomID);
   });
 
-  mw.on('room-createUser', (d) => {
+  // $(window).bind("beforeunload", function() {
+  //   mw.roomAction('remove');
+  //   console.log("remove");
+  // });
+
+  // mw.on('room-createUser', (d) => {
+  //   const roomList = d.data.roomList;
+  //   $('.room-list').html('');
+  //   Object.keys(roomList).forEach((roomID) => {
+  //     const memberCount = roomList[roomID].members.length;
+  //     addRoomElement(roomID, memberCount);
+  //   });
+  // });
+  mw.on('room-update', (d) => {
     const roomList = d.data.roomList;
+    $('.room-list').html('');
     Object.keys(roomList).forEach((roomID) => {
       const memberCount = roomList[roomID].members.length;
       addRoomElement(roomID, memberCount);
@@ -22,10 +38,17 @@ $(() => {
   });
   mw.on('room-createRoom', (d) => {
     const rid = d.data.user.rid;
+    currentRid = rid;
     addRoomElement(rid, 1);
+    if (d.data.user.uid === mw.uid) {
+      startWaiting(rid);
+      mw.roomAction('join', rid);
+    }
   });
   mw.on('room-startGame', (d) => {
-    startGame();
+    if(d.data.user.rid = currentRid){
+      startGame();
+    }
   });
 
   function addRoomElement(rid, count) {
@@ -41,13 +64,14 @@ $(() => {
     `);
   }
 
-  function startWaiting(){
+  function startWaiting(rid){
     $(".container").html(`
       <div class="title">
         <img src="images/title.png">
       </div>
       <div class="waitingContent">
         <p>揃うの待ち</p>
+        <p>Room ID: ${rid}</p>
         <p>人数:<span class="waiting-count">1</span>/8</p>
         <input type="button" value="待たずに始める" onclick="sendStartSignal()">
       </div>

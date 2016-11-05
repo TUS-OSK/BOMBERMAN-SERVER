@@ -4,6 +4,7 @@ class RoomActions {
     this.sio = mw.sio;
     this.mw = mw;
     this.user = null;
+    console.log("uid", this.uid);
   }
   join(roomID) {
     this.sio.emit("room-join", [this.user, roomID]);
@@ -18,8 +19,12 @@ class RoomActions {
     if (!this.user) {
       this.mw.on("room-createUser", (data) => {
         this.user = data.data.user;
+        this.mw.emit('room-update', data);
       });
       this.sio.emit("room-createUser", [this.uid]);
+      this.mw.on('room-join', (data) => {
+        this.user = data.data.user;
+      });
     }
   }
   createRoom() {
