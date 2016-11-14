@@ -24,7 +24,7 @@ $(() => {
     const rid = d.data.user.rid;
     addRoomElement(rid, 1);
   });
-  mw.on('room-startGame', (d) => {
+  mw.on('startGame', (d) => {
     startGame();
   });
 
@@ -58,5 +58,5 @@ $(() => {
 });
 
 function sendStartSignal(){
-  mw.roomAction('startGame');
+  mw.bombermanAction('startGame');
 }

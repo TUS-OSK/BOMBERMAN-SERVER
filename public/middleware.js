@@ -30,9 +30,9 @@ class RoomActions {
     console.log(this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
-  startGame() {
-    this.sio.emit("room-startGame", [this.user]);
-  }
+  // startGame() {
+  //   this.sio.emit("room-startGame", [this.user]);
+  // }
 }
 
 class BombermanActions {
@@ -50,6 +50,11 @@ class BombermanActions {
       roomID: this.roomID,
       data: data
     };
+  }
+  startGame() {
+    this.send("startGame", {
+
+    });
   }
   send(name, data) {
     this.sio.emit("bomberman-main", this.sendFormat(name, data));

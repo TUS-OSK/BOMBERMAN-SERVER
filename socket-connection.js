@@ -148,7 +148,6 @@ function socketExecute() {
       console.log(data)
       if (data.roomID) {
               console.log(14)
-
         io.to(data.roomID).emit('bomberman-main', data);
       }
     })
