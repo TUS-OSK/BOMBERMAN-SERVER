@@ -66,9 +66,6 @@ $(() => {
 
   function startWaiting(rid){
     $(".container").html(`
-      <div class="title">
-        <img src="images/title.png">
-      </div>
       <div class="waitingContent">
         <p>揃うの待ち</p>
         <p>Room ID: ${rid}</p>
