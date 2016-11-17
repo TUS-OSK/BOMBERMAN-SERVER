@@ -7,7 +7,7 @@ function startGame(){
   $(".root-wrap").html('');
     var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1]);  // game display size
     game.fps = 60;                  // frame per second
-    game.preload("images/player.png", "images/map.png", "images/bomb.png", "images/flame.png");
+    game.preload("images/example_chara.png", "images/map.png", "images/bomb.png", "images/flame.png");
     var gameFlow = new GameFlow(game);
     game.onload = function(){
         game.keybind(" ".charCodeAt(0), "space");
@@ -41,10 +41,11 @@ class GameFlow{
                 playScene.addChild(new Tile(x, y, SIZE, this.game.assets["images/map.png"], cel, [false, true]));
             });
         });
-        var you = new Player(1, 1, SIZE, this.game.assets["images/player.png"], false);
+        var you = new Player(1, 1, SIZE, this.game.assets["images/example_chara.png"], false);
         playScene.addChild(you);
         this.game.pushScene(playScene);
         you.onMove((prevCoord, nextCoord) => {
+            // you.frame = [0, 0, 1, 1, 2, 2];
         	var currentBomb = mapData.exist(prevCoord, "Bomb");
         	if(currentBomb){
         		currentBomb.forEach((b) => {
@@ -73,12 +74,27 @@ class GameFlow{
 	            }
             }else if(this.game.input.up){
                 moveVector = [0, -1];
+                if (moveVector = [0, -1]) { 
+                    you.frame = [28, 28, 29, 29, 30, 30];
+                }
             }else if(this.game.input.right){
                 moveVector = [+1, 0];
+                if (moveVector = [+1, 0]) {
+                    you.frame = [19, 19, 20, 20, 21, 21];
+                }
             }else if(this.game.input.down){
                 moveVector = [0, +1];
+                if (moveVector = [0, +1]) {
+                    you.frame = [1, 1, 2, 2, 3, 3];
+                }
             }else if(this.game.input.left){
                 moveVector = [-1, 0];
+                if (moveVector = [-1, 0]) {
+                    you.frame = [10, 10, 11, 11, 12, 12];
+                }
+            }else {
+                moveVector = [0, 0];
+                you.frame = [7];
             }
             you.updateCoordinate(you.cx + moveVector[0], you.cy + moveVector[1]);
             // check sequence ------------
