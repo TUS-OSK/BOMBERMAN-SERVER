@@ -54,11 +54,11 @@ class GameFlow{
                     b.collision = true;
                 });
             }
-            console.log('moveend', nextCoord, isContinuous);
+            // console.log('moveend', nextCoord, isContinuous);
         });
         you.onMoveStart((prevCoord, nextCoord, isContinuous) => {
             // console.log(prevCoord, nextCoord);
-            console.log('movestart', nextCoord, isContinuous);
+            // console.log('movestart', nextCoord, isContinuous);
             window.mw.bombermanAction("move", prevCoord, nextCoord);
         });
         // bomb
@@ -68,12 +68,30 @@ class GameFlow{
             bomb.finalize(() => {
                 playScene.removeChild(bomb);
             });
-            bomb.detonate((flameCx, flameCy) => {
+            bomb.startTimer((flameCx, flameCy) => {
                 var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
+                // console.log(mapdataStatus());
+                // for(var kaka = 0; kaka < 11; kaka++){
+                //     for(var kiki = 0; kiki < 11; kiki++){
+                //         if(mapData.exist([kaka, kiki], "Flame")){
+                //             console.log("flame", kaka, kiki);
+                //         }
+                //         if(mapData.exist([kaka, kiki], "Bomb")){
+                //             console.log(" bomb", kaka, kiki);
+                //         }
+                //     }
+                // }
                 playScene.addChild(flame);
+                var bombs = mapData.exist([flameCx, flameCy], "Bomb");
+                // console.log(bombs);
                 flame.finalize(() => {
                     playScene.removeChild(flame);
                 });
+                if(bombs){
+                    bombs.forEach((b) => {
+                        b.detonate();
+                    });
+                }
             });
         };
         // others
@@ -179,6 +197,12 @@ class GameFlow{
         });
     }
 }
+
+function mapdataStatus(type) {
+    var nameMap = mapData.map.map((col) => col.map((ary) => ary[1]&&ary[1].name()));
+    return nameMap.map((ary) => ary.toString()).reduce((previous, current) => previous + "\n" + current);
+}
+
 
 class MapData{
     constructor(matrix){
@@ -403,18 +427,28 @@ var Bomb = Class.create(Collider, {
         this.size = size;
         this.fireLength = fireLength;
         this.finalizeCb = () => {};
+        this.flameCb = () => {};
+        this.timer = null;
     },
 
     finalize(cb){
     	this.finalizeCb = cb;
     },
 
-    detonate(cb){
-        setTimeout(() => {
-        	this.finalizeCb();
-        	this.flame(cb);
-        	this.remove();
+    startTimer(cb){
+        this.flameCb = cb;
+        this.timer = setTimeout(() => {
+        	this.detonate();
         }, 2 * 1000);
+    },
+
+    detonate(){
+        if(this.timer){
+            window.clearTimeout(this.timer);
+        }
+        this.finalizeCb();
+        this.remove();
+        this.flame(this.flameCb);
     },
 
     flame(cb){
