@@ -68,7 +68,7 @@ class BombermanActions {
   }
   send(name, data) {
     console.log("bombermanAction send",this.sendFormat(name, data))
-    this.sio.emit("bomberman-main", this.sendFormat(name, data));
+    this.sio.emit("bomberman-message", this.sendFormat(name, data));
   }
   putBomb(x,y,fireLength) {
     this.send("putBomb", {
@@ -118,9 +118,10 @@ class Middleware extends window.EventEmitter {
     this.bombermanActions = new BombermanActions(this);
 
 
-    this.sio.on('message', (data) => {
-      console.log("message:", data);
+    this.sio.on('room-message', (data) => {
+      console.log("room-message:", data);
       this.emit(data.name, data);
+      this.emit('room-all', data)
     });
 
     this.sio.on('connect', () => {
@@ -133,7 +134,7 @@ class Middleware extends window.EventEmitter {
       this.sio.emit('')
     });
 
-    this.sio.on('bomberman-main', (data) => {
+    this.sio.on('bomberman-message', (data) => {
       console.log("data:",data)
       this.emit(data.name, data);
     });
@@ -150,7 +151,7 @@ class Middleware extends window.EventEmitter {
 
   send(data) {
     data.uid = this.uid;
-    this.sio.emit('message', data);
+    this.sio.emit('room-message', data);
   }
 
   roomAction(actionName, arg) {

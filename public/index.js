@@ -51,6 +51,14 @@ $(() => {
     startGame();
   });
 
+  mw.on('room-all', (d) => {
+    const rid = d.data.user.rid;
+    const room = d.data.roomList[rid];
+    const memberNumber = room && room.members.length;
+    // debugger;
+    $('.room-members-number').text(memberNumber);
+  });
+
   function addRoomElement(rid, count) {
     $('.room-list').append(`
       <div class="room">
@@ -69,8 +77,9 @@ $(() => {
       <div class="waitingContent">
         <p>揃うの待ち</p>
         <p>Room ID: ${rid}</p>
-        <p>人数:<span class="waiting-count">1</span>/8</p>
+        <p>人数:<span class="room-members-number">1</span>/8</p>
         <input type="button" value="待たずに始める" onclick="sendStartSignal()">
+        <input type="button" value="部屋から抜ける" onclick="location.reload()">
       </div>
     `);
   }

@@ -13,7 +13,7 @@ class Manager {
     this.outOfRoom.push(new User(uid, sioid));
   }
   createRoom(user){
-    const rid = Math.random().toString(36).slice(-8);
+    const rid = Math.random().toString(10).slice(-4);
     user.rid = rid;
     user.status = memberStatus.playing;
     this.roomList[rid] = {
@@ -51,7 +51,7 @@ class Manager {
   //   // }
   //   this.outOfRoom.push(user);
   // }
-  leave(sioid){
+  leave(sioid, socket){
     //     console.log(user);
     // this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
     // console.log(this.roomList)
@@ -146,7 +146,9 @@ function socketExecute() {
     //   console.log('enter', data);
     //   if(data.rid === null) outOfRoom.push(data.uid);
     // });
-    ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
+
+    // やっぱこのへんキモいからあとでどうにかする
+    ["createUser","createRoom","join","leave"].forEach((methodName) => {
       // console.log(roomManager.outOfRoom);
       // Object.keys(roomManager.roomList).forEach((key) => {
       //   console.log(key, roomManager.roomList[key].members);
@@ -159,31 +161,30 @@ function socketExecute() {
         } catch (e) {
           error = e;
         }
-        methodName == 'createRoom' && console.log('createroom',args[0], roomManager.findUser(args[0]))
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
-        // console.log(user);
         const response = sendFormat(`room-${methodName}`, {
           roomList: roomManager.roomList,
           outOfRoom: roomManager.outOfRoom,
           user: user
         }, error);
-        io.sockets.emit('message', response);
+        io.sockets.emit('room-message', response);
+
       });
     });
 
-    socket.on('bomberman-main', (data) => {
+    socket.on('bomberman-message', (data) => {
       console.log(data)
       if (data.roomID) {
-        io.to(data.roomID).emit('bomberman-main', data);
+        io.to(data.roomID).emit('bomberman-message', data);
       }
     })
 
     socket.on('room-members', (user) => {
-      io.socket.emit('message', sendFormat("room-members", roomManager.roomList[user.rid].members));
+      io.socket.emit('room-message', sendFormat("room-members", roomManager.roomList[user.rid].members));
     });
 
-    socket.on('message', function(data) {
-      io.sockets.emit('message', data);
+    socket.on('room-message', function(data) {
+      io.sockets.emit('room-message', data);
       console.log(data);
     });
 
@@ -197,7 +198,7 @@ function socketExecute() {
         outOfRoom: roomManager.outOfRoom,
         user: null
       }, null);
-      io.sockets.emit('message', response);
+      io.sockets.emit('room-message', response);
     });
   });
 }
