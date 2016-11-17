@@ -74,12 +74,16 @@ $(() => {
 
   function startWaiting(rid){
     $(".container").html(`
-      <div class="waitingContent">
-        <p>揃うの待ち</p>
-        <p>Room ID: ${rid}</p>
-        <p>人数:<span class="room-members-number">1</span>/8</p>
-        <input type="button" value="待たずに始める" onclick="sendStartSignal()">
-        <input type="button" value="部屋から抜ける" onclick="location.reload()">
+      <div class="waiting-content">
+        <div class="waiting-message">
+          <p><img src="./images/loading.svg" width="50" height="50"></p>
+          <p class="waiting-message-status">8人揃うのを待機しています....</p>
+          <p><span class="waiting-message-info">Room ID: ${rid}, 人数: <span class="room-members-number">1</span>/8</span></p>
+        </div>
+        <div class="waiting-buttons">
+          <input type="button" value="待たずに始める" onclick="sendStartSignal()">　　
+          <input type="button" value="部屋から抜ける" onclick="location.reload()">
+        </div>
       </div>
     `);
   }
