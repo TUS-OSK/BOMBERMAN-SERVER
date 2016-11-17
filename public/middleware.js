@@ -4,8 +4,10 @@ class RoomActions {
     this.sio = mw.sio;
     this.mw = mw;
     this.user = null;
+    console.log("uid", this.uid);
   }
   join(roomID) {
+    console.log("room-join send", [this.user, roomID]);
     this.sio.emit("room-join", [this.user, roomID]);
 
   }
@@ -21,13 +23,21 @@ class RoomActions {
   createUser() {
     if (!this.user) {
       this.mw.on("room-createUser", (data) => {
-        this.user = data.data.user;
+        if (this.user === null) {
+          this.user = data.data.user;
+        }
+        this.mw.emit('room-update', data);
       });
       this.sio.emit("room-createUser", [this.uid]);
+      this.mw.on('room-join', (data) => {
+        // if(this.user == null){
+        //   this.user = data.data.user;
+        // }
+      });
     }
   }
   createRoom() {
-    console.log(this.user);
+    console.log('createroom send',this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
   // startGame() {
@@ -57,17 +67,18 @@ class BombermanActions {
     });
   }
   send(name, data) {
+    console.log("bombermanAction send",this.sendFormat(name, data))
     this.sio.emit("bomberman-main", this.sendFormat(name, data));
   }
-  putBomb(x,y,size) {
+  putBomb(x,y,fireLength) {
     this.send("putBomb", {
       position: {x:x,y:y},
-      size : size
+      fireLength : fireLength
     });
   }
-  move(x,y) {
+  move(from, to) {
     this.send("move", {
-      position: {x:x,y:y}
+      position: {from:from,to:to}
     });
   }
   death() {
@@ -79,6 +90,15 @@ class BombermanActions {
       position: {x:x,y:y}
     });
   }
+  requestmove() {
+    this.send("requestmove");
+  }
+  // handshake() {
+  //   this.send("handshake");
+  // }
+  // handshakeresponse() {
+  //   this.send("handshakeresponse");
+  // }
 }
 
 
@@ -88,6 +108,8 @@ class Middleware extends window.EventEmitter {
     super();
     this.uid = Math.random().toString(36).slice(-8);
     this.sio = io.connect('http://localhost:4000/');
+    this.rid = null;
+    this.members = [];
 
     this.onMessageFunction = {};
 
@@ -110,14 +132,19 @@ class Middleware extends window.EventEmitter {
       console.log('checked rooms');
       this.sio.emit('')
     });
+
     this.sio.on('bomberman-main', (data) => {
       console.log("data:",data)
       this.emit(data.name, data);
     });
 
     this.on("room-join", (data) => {
-      this.bombermanActions.roomID = data.data.user.rid;
-    })
+      if (!this.rid) {
+        this.bombermanActions.roomID = data.data.user.rid;
+        this.rid = data.data.user.rid;
+        this.members = data.data.roomList[this.rid].members;
+      }
+    });
   }
 
 

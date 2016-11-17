@@ -3,57 +3,78 @@ var http = require('http');
 // var socketio = require('socket.io');
 var server = http.createServer();
 
-
 class Manager {
   constructor(){
     // this.rid = Math.random().toString(36).slice(-8);
     this.roomList = {};
     this.outOfRoom = [];
   }
-  createUser(uid){
-    this.outOfRoom.push(new User(uid));
+  createUser(uid, sioid){
+    this.outOfRoom.push(new User(uid, sioid));
   }
   createRoom(user){
     const rid = Math.random().toString(36).slice(-8);
     user.rid = rid;
     user.status = memberStatus.playing;
     this.roomList[rid] = {
-      members: [user],
+      members: [],
       waiting: true,
     };
   }
-  join(user, rid, socket){
-    if (this.roomList[rid].members.length >= 8) {
-      throw {
-        name: "RoomCapacityException",
-        message: "this room is full of players. max capacity is 8."
-      };
-    }
+  join(user, rid, sioid, socket){
+    if (this.roomList[rid].members.length >= 8) throw {
+      name: "RoomCapacityException",
+      message: "this room is full of players. max capacity is 8."
+    };
     for(let i in this.outOfRoom){
-      if(this.outOfRoom[i] == user){
+      if(this.outOfRoom[i].uid == user.uid){
         this.outOfRoom.splice(i, 1);
         break;
       }
     }
     this.roomList[rid].members.push(user);
+    console.log("join room", this.roomList[rid].members)
     if(user.rid === null){
       user.rid = rid;
     }
     user.status = memberStatus.playing;
     socket.join(rid);
   }
-  leave(user){
-    for(let i in this.roomList[user.rid].members){
-      if(this.roomList[user.rid].members[i] === user){
-        this.roomList[user.rid].members.splice(i, 1);
-        break;
-      }
+  // leave(user){
+  //   this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
+  //   // for(let i in this.roomList[user.rid].members){
+  //   //   if(this.roomList[user.rid].members[i].uid === user.uid){
+  //   //     this.roomList[user.rid].members.splice(i, 1);
+  //   //     console.log('(>_<)')
+  //   //     break;
+  //   //   }
+  //   // }
+  //   this.outOfRoom.push(user);
+  // }
+  leave(sioid){
+    //     console.log(user);
+    // this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
+    // console.log(this.roomList)
+    // console.log(user);
+    // user.rid = null;
+    const indexOutOfRoom = this.outOfRoom.map((v) => v.sioid).indexOf(sioid);
+    console.log("OutOfRoom", this.outOfRoom.map((v) => v.sioid));
+    if (indexOutOfRoom !== -1) {
+      this.outOfRoom.splice(indexOutOfRoom, 1);
+      console.log("outOfRoom delete", sioid);
     }
-    this.outOfRoom.push(user);
-  }
-  remove(user){
-    leave(user);
-    user.rid = null;
+    Object.keys(this.roomList).forEach((key) => {
+      console.log(this.roomList[key].members.map((v) => v.sioid), sioid);
+      const indexRoomList = this.roomList[key].members.map((v) => v.sioid).indexOf(sioid);
+      console.log("RoomList", key, this.roomList[key].members.map((v) => v.sioid));
+      if (indexRoomList !== -1) {
+        this.roomList[key].members.splice(indexRoomList, 1);
+        console.log("roomList delete", sioid);
+        if (this.roomList[key].members.length === 0) {
+          delete this.roomList[key];
+        }
+      }
+    });
   }
   findUser(uid) {
     return (
@@ -72,9 +93,10 @@ class Manager {
 const roomManager = new Manager();
 
 class User {
-  constructor(uid){
+  constructor(uid, sioid){
     this.uid = uid;
     this.rid = null;
+    this.sioid = sioid;
     this.status = memberStatus.waiting;
   }
 }
@@ -124,15 +146,20 @@ function socketExecute() {
     //   console.log('enter', data);
     //   if(data.rid === null) outOfRoom.push(data.uid);
     // });
-    ["createUser","createRoom","join","leave","remove","startGame"].forEach((methodName) => {
+    ["createUser","createRoom","join","leave","remove"].forEach((methodName) => {
+      // console.log(roomManager.outOfRoom);
+      // Object.keys(roomManager.roomList).forEach((key) => {
+      //   console.log(key, roomManager.roomList[key].members);
+      // });
       socket.on(`room-${methodName}`, (args) => {
         let error = null;
-        args && args.push(socket);
+        args && args.push(socket.id,socket);
         try {
           roomManager[methodName].apply(roomManager, args);
         } catch (e) {
           error = e;
         }
+        methodName == 'createRoom' && console.log('createroom',args[0], roomManager.findUser(args[0]))
         const user = (args[0]&&args[0].uid) ? args[0] : roomManager.findUser(args[0]);
         // console.log(user);
         const response = sendFormat(`room-${methodName}`, {
@@ -141,13 +168,12 @@ function socketExecute() {
           user: user
         }, error);
         io.sockets.emit('message', response);
-        // console.log(`receive room-${methodName}:`,args," ---> ",response.data);
       });
     });
+
     socket.on('bomberman-main', (data) => {
       console.log(data)
       if (data.roomID) {
-              console.log(14)
         io.to(data.roomID).emit('bomberman-main', data);
       }
     })
@@ -163,7 +189,15 @@ function socketExecute() {
 
     socket.on('disconnect', function(data) {
       io.sockets.emit('massage', data + ' : 退出');
-      console.log(data + ' : 退出');
+      console.log(data + ' : 退出', socket.id);
+      roomManager.leave(socket.id);
+      // console.log(user);
+      const response = sendFormat(`room-update`, {
+        roomList: roomManager.roomList,
+        outOfRoom: roomManager.outOfRoom,
+        user: null
+      }, null);
+      io.sockets.emit('message', response);
     });
   });
 }
