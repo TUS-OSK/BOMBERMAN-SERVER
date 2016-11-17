@@ -107,7 +107,7 @@ class Middleware extends window.EventEmitter {
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://localhost:4000/');
+    this.sio = io.connect('http://nokogirl.cloudapp.net:4000/');
     this.rid = null;
     this.members = [];
 
