@@ -1,144 +1,102 @@
-var fs = require('fs');
-var http = require('http');
-// var socketio = require('socket.io');
-var server = http.createServer();
+function socketExecute(io) {
 
-class Manager {
-  constructor(){
-    // this.rid = Math.random().toString(36).slice(-8);
-    this.roomList = {};
-    this.outOfRoom = [];
-  }
-  createUser(uid, sioid){
-    this.outOfRoom.push(new User(uid, sioid));
-  }
-  createRoom(user){
-    const rid = Math.random().toString(10).slice(-4);
-    user.rid = rid;
-    user.status = memberStatus.playing;
-    this.roomList[rid] = {
-      members: [],
-      waiting: true,
-    };
-  }
-  join(user, rid, sioid, socket){
-    if (this.roomList[rid].members.length >= 8) throw {
-      name: "RoomCapacityException",
-      message: "this room is full of players. max capacity is 8."
-    };
-    for(let i in this.outOfRoom){
-      if(this.outOfRoom[i].uid == user.uid){
-        this.outOfRoom.splice(i, 1);
-        break;
-      }
+  class Manager {
+    constructor(){
+      // this.rid = Math.random().toString(36).slice(-8);
+      this.roomList = {};
+      this.outOfRoom = [];
     }
-    this.roomList[rid].members.push(user);
-    console.log("join room", this.roomList[rid].members)
-    if(user.rid === null){
+    createUser(uid, sioid){
+      this.outOfRoom.push(new User(uid, sioid));
+    }
+    createRoom(user){
+      const rid = Math.random().toString(10).slice(-4);
       user.rid = rid;
+      user.status = memberStatus.playing;
+      this.roomList[rid] = {
+        members: [],
+        waiting: true,
+      };
     }
-    user.status = memberStatus.playing;
-    socket.join(rid);
-  }
-  // leave(user){
-  //   this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
-  //   // for(let i in this.roomList[user.rid].members){
-  //   //   if(this.roomList[user.rid].members[i].uid === user.uid){
-  //   //     this.roomList[user.rid].members.splice(i, 1);
-  //   //     console.log('(>_<)')
-  //   //     break;
-  //   //   }
-  //   // }
-  //   this.outOfRoom.push(user);
-  // }
-  leave(sioid, socket){
-    //     console.log(user);
-    // this.roomList[user.rid].members = this.roomList[user.rid].members.filter((u) => u.uid != user.uid);
-    // console.log(this.roomList)
-    // console.log(user);
-    // user.rid = null;
-    const indexOutOfRoom = this.outOfRoom.map((v) => v.sioid).indexOf(sioid);
-    console.log("OutOfRoom", this.outOfRoom.map((v) => v.sioid));
-    if (indexOutOfRoom !== -1) {
-      this.outOfRoom.splice(indexOutOfRoom, 1);
-      console.log("outOfRoom delete", sioid);
-    }
-    Object.keys(this.roomList).forEach((key) => {
-      console.log(this.roomList[key].members.map((v) => v.sioid), sioid);
-      const indexRoomList = this.roomList[key].members.map((v) => v.sioid).indexOf(sioid);
-      console.log("RoomList", key, this.roomList[key].members.map((v) => v.sioid));
-      if (indexRoomList !== -1) {
-        this.roomList[key].members.splice(indexRoomList, 1);
-        console.log("roomList delete", sioid);
-        if (this.roomList[key].members.length === 0) {
-          delete this.roomList[key];
+    join(user, rid, sioid, socket){
+      if (this.roomList[rid].members.length >= 8) throw {
+        name: "RoomCapacityException",
+        message: "this room is full of players. max capacity is 8."
+      };
+      for(let i in this.outOfRoom){
+        if(this.outOfRoom[i].uid == user.uid){
+          this.outOfRoom.splice(i, 1);
+          break;
         }
       }
-    });
+      this.roomList[rid].members.push(user);
+      console.log("join room", this.roomList[rid].members)
+      if(user.rid === null){
+        user.rid = rid;
+      }
+      user.status = memberStatus.playing;
+      socket.join(rid);
+    }
+    leave(sioid, socket){
+      const indexOutOfRoom = this.outOfRoom.map((v) => v.sioid).indexOf(sioid);
+      console.log("OutOfRoom", this.outOfRoom.map((v) => v.sioid));
+      if (indexOutOfRoom !== -1) {
+        this.outOfRoom.splice(indexOutOfRoom, 1);
+        console.log("outOfRoom delete", sioid);
+      }
+      Object.keys(this.roomList).forEach((key) => {
+        console.log(this.roomList[key].members.map((v) => v.sioid), sioid);
+        const indexRoomList = this.roomList[key].members.map((v) => v.sioid).indexOf(sioid);
+        console.log("RoomList", key, this.roomList[key].members.map((v) => v.sioid));
+        if (indexRoomList !== -1) {
+          this.roomList[key].members.splice(indexRoomList, 1);
+          console.log("roomList delete", sioid);
+          if (this.roomList[key].members.length === 0) {
+            delete this.roomList[key];
+          }
+        }
+      });
+    }
+    findUser(uid) {
+      return (
+        this.outOfRoom.find((user) => user.uid === uid) ||
+        Object.keys(this.roomList)
+          .map((rid) => this.roomList[rid].members.find((user) => user.uid === uid)
+          )
+          .find((something) => !!something)
+      );
+    }
+    startGame(rid){
+      this.roomList[rid].waiting = false;
+    }
   }
-  findUser(uid) {
-    return (
-      this.outOfRoom.find((user) => user.uid === uid) ||
-      Object.keys(this.roomList)
-        .map((rid) => this.roomList[rid].members.find((user) => user.uid === uid)
-        )
-        .find((something) => !!something)
-    );
+
+  const roomManager = new Manager();
+
+  class User {
+    constructor(uid, sioid){
+      this.uid = uid;
+      this.rid = null;
+      this.sioid = sioid;
+      this.status = memberStatus.waiting;
+    }
   }
-  startGame(rid){
-    this.roomList[rid].waiting = false;
-  }
-}
 
-const roomManager = new Manager();
-
-class User {
-  constructor(uid, sioid){
-    this.uid = uid;
-    this.rid = null;
-    this.sioid = sioid;
-    this.status = memberStatus.waiting;
-  }
-}
-
-const memberStatus = {
-  playing: 1,
-  watching: 2,
-  waiting: 3,
-};
-
-function sendFormat(name, obj, err) {
-  return {
-    name: name,
-    success: !err,
-    msg: err ? err.message : null,
-    data: obj,
+  const memberStatus = {
+    playing: 1,
+    watching: 2,
+    waiting: 3,
   };
-}
 
-function socketExecute() {
+  function sendFormat(name, obj, err) {
+    return {
+      name: name,
+      success: !err,
+      msg: err ? err.message : null,
+      data: obj,
+    };
+  }
 
-  server.on('request', function(req, res) {
-    res.writeHead(200, {'Content-Type': 'text/html'});
-    var output = fs.readFileSync('./bomberman.html', 'utf-8');
-    // var output = fs.readFile(fs.readFileSync('./bomberman.html', 'utf-8'));    ←誤りの原因
-    res.end(output);
-  });
-
-  server.listen(4000);
-  var io = require('socket.io').listen(server);
-  var roomList = {
-    'dc6b76a0':{
-      number: 13,
-      watchers: [],
-      members:[],
-    },
-    '2':{
-      number: 14,
-      watchers: [],
-      members:[],
-    },
-  };
 
   io.sockets.on('connection', function(socket) {
     // console.log('よくわからんけど入室');
