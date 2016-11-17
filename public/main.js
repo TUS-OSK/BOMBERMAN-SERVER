@@ -7,7 +7,7 @@ function startGame(){
   $(".root-wrap").html('');
     var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1]);  // game display size
     game.fps = 60;                  // frame per second
-    game.preload("images/example_chara.png", "images/map.png", "images/bomb.png", "images/flame.png");
+    game.preload("images/chara_ex1.png", "images/map.png", "images/example_mapBig.png", "images/example_explosionBig.png");
     var gameFlow = new GameFlow(game);
     game.onload = function(){
         game.keybind(" ".charCodeAt(0), "space");
@@ -41,7 +41,7 @@ class GameFlow{
                 playScene.addChild(new Tile(x, y, SIZE, this.game.assets["images/map.png"], cel, [false, true]));
             });
         });
-        var you = new Player(1, 1, SIZE, this.game.assets["images/example_chara.png"], false);
+        var you = new Player(1, 1, SIZE, this.game.assets["images/chara_ex1.png"], false);
         playScene.addChild(you);
         this.game.pushScene(playScene);
         you.onMove((prevCoord, nextCoord) => {
@@ -58,25 +58,31 @@ class GameFlow{
             // move sequence --------------
             if(this.game.input.space){
             	if(!(mapData.exist([you.cx, you.cy], "Bomb"))){
-            		var bomb = new Bomb(you.cx, you.cy, SIZE, this.game.assets["images/bomb.png"], false, 1, playScene);
+            		var bomb = new Bomb(you.cx, you.cy, SIZE, this.game.assets["images/example_mapBig.png"], false, 1, playScene);
+                    bomb.frame = [27];
             		playScene.addChild(bomb);
 	                bomb.finalize(() => {
 	                	playScene.removeChild(bomb);
 	                });
 	                bomb.detonate((flameCx, flameCy) => {
-	                	var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/flame.png"]);
+	                	var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets["images/example_explosionBig.png"]);
+                        flame.frame = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3,4,4,4,4,4,4,4,4,4,4,4,4,4,4];
 	                	playScene.addChild(flame);
+                        console.log(Math.floor(+new Date()/1000));
+
+                        // console.log(now.dat);
 	                	flame.finalize(() => {
 	                		playScene.removeChild(flame);
+                            console.log(Math.floor(+new Date()/1000));
 	                	});
 	                });
 	                console.log(you.cx, you.cy, "put a bomb");
 	            }
             }else if(this.game.input.up){
                 moveVector = [0, -1];
-                if (moveVector = [0, -1]) { 
-                    you.frame = [28, 28, 29, 29, 30, 30];
-                }
+                // if (moveVector = [0, -1]) { 
+                //     you.frame = [28, 28, 29, 29, 30, 30];
+                // }
             }else if(this.game.input.right){
                 moveVector = [+1, 0];
                 if (moveVector = [+1, 0]) {
@@ -205,11 +211,16 @@ var Cell = Class.create(Sprite, {
             if((vec[0] !== 0 || vec[1] !== 0) && ((this.current[0] === null && this.current[1] === null) || (vec[0] === -1 * this.current[0] || vec[1] === -1 * this.current[1]))){
                 this.current[0] = vec[0];
                 this.current[1] = vec[1];
+                console.log("koko?");
             }
             // console.log(cx, cy, vec, this.current);
 
             this.x += this.current[0];
             this.y += this.current[1];
+
+            // you.frame = [28, 28, 29, 29, 30, 30];
+            console.log("doko");
+
 
             if(this.x % this.width === 0 && this.y % this.height === 0){
                 this._updateCellCoordinate(this.x / this.width, this.y / this.height);
@@ -218,6 +229,9 @@ var Cell = Class.create(Sprite, {
                 currentPrevious[1] = this.current[1];
                 this.current[0] = null;
                 this.current[1] = null;
+                
+                console.log("soko");
+
 	        	return [[this.cx - currentPrevious[0], this.cy - currentPrevious[1]], [this.cx, this.cy]];
             } else {
 	        	return [[this.cx, this.cy], [this.cx + this.current[0], this.cy + this.current[1]]];
