@@ -91,10 +91,17 @@ class GameFlow{
           b.collision = true;
         });
       }
-      // アイテム設置 mapdata.existを使う
     });
     you.onMoveStart((prevCoord, nextCoord, isContinuous) => {
       window.mw.bombermanAction('move', prevCoord, nextCoord);
+      var professors = mapData.exist(nextCoord, 'Professor');
+      if (professors) setTimeout(() => {
+        var professor = professors[0];
+        professor.taken(() => {
+          playScene.removeChild(professor);
+        });
+        // ここに取得処理を書く
+      }, 300);
     });
     // bomb
     var setBomb = (cx, cy) => {
@@ -131,7 +138,6 @@ class GameFlow{
             if (Math.random() < 0.4) {
               var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], Math.random()*3|0);
               setTimeout(() => {
-                debugger;
                 playScene.addChild(professor);
               },1200);
             }
@@ -599,10 +605,12 @@ const Professor = Class.create(Collider, {
     Collider.call(this, cx, cy, size, false, true);
     this.image = image;
     this.frame = itemType;
+    this.itemType = itemType;
   },
 
   taken(cb) {
-    this.remove()
+    this.remove();
     cb();
   }
 });
+
