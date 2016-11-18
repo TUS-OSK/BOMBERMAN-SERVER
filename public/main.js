@@ -13,7 +13,7 @@ function startGame(){
   $('.root-wrap').html('');
   var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1] + MERGIN);  // game display size
   game.fps = FPS;                  // frame per second
-  game.preload('images/player.png', 'images/player2.png', 'images/map.png', 'images/bomb.png', 'images/flame.png');
+  game.preload('images/player.png', 'images/player2.png', 'images/map.png', 'images/bomb.png', 'images/flame.png', 'images/professor.png');
   var gameFlow = new GameFlow(game);
   game.onload = function(){
     game.keybind(' '.charCodeAt(0), 'space');
@@ -128,9 +128,9 @@ class GameFlow{
         obstacles && obstacles.forEach((o) => {
           playScene.removeChild(o);
           o.broken(() => {
-            if (Math.random() < 0.3) {
-              var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/bomb.png']);
-              setTimeout(()=> {
+            if (Math.random() < 0.4) {
+              var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], Math.random()*3|0);
+              setTimeout(() => {
                 debugger;
                 playScene.addChild(professor);
               },1200);
@@ -595,10 +595,10 @@ const Obstacle = Class.create(Collider, {
 const Professor = Class.create(Collider, {
   name() { return 'Professor'; },
 
-  initialize(cx, cy, size, image) {
+  initialize(cx, cy, size, image, itemType) { // itemType: 0->速度, 1->火力, 2->ボム個数
     Collider.call(this, cx, cy, size, false, true);
     this.image = image;
-    this.frame = 0;
+    this.frame = itemType;
   },
 
   taken(cb) {
