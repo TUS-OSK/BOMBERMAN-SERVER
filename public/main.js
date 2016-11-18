@@ -44,15 +44,43 @@ class GameFlow{
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
+    var isHost = mw.members[0].uid === mw.uid;
+    console.log("host status",isHost,mw.members.map((member)=>member.uid),mw.uid);
+    var positions = [];
+    if (isHost) {
+      map.forEach((row, y) => {
+        row.forEach((cel, x) => {
+          if (
+            !(x === 1 && y === 1) && !(x === 2 && y === 1) && !(x === 1 && y === 2) &&
+            !(x === 1 && y === map.length-2) && !(x === 1 && y === map.length-3) &&!(x === 2 && y === map.length-2) &&
+            !(y === 1 && x === map.length-2) && !(y === 1 && x === map.length-3) &&!(y === 2 && x === map.length-2) &&
+            !(x === map.length-2 && y === map.length-2) && !(x === map.length-2 && y === map.length-3) &&!(x === map.length-3 && y === map.length-2) &&
+            map[x][y] === 0 &&
+            Math.random() < 0.7
+          ) {
+            positions.push([x, y]);
+          }
+        });
+      });
+      mw.bombermanAction('obstaclePositions', positions);
+    }
+
+    mw.on('obstaclePositions', (data) => {
+      var positions = data.data.positions;
+      positions.forEach((pos) => {
+        var obstacle = new Obstacle(pos[0], pos[1], SIZE, this.game.assets['images/map.png']);
+        playScene.addChild(obstacle);
+      });
+    });
+
+
     map.forEach((row, y) => {
       row.forEach((cel, x) => {
         playScene.addChild(new Tile(x, y, SIZE, this.game.assets['images/map.png'], cel, [false, true]));
-        if (cel === 0 && Math.random() < 0.6 && !(x === 1 && y === 1)) {
-            var obstacle = new Obstacle(x, y, SIZE, this.game.assets['images/map.png']);
-            playScene.addChild(obstacle);
-        }
       });
     });
+
+
     // you
     var you = new Player(spawnCoord[0], spawnCoord[1], SIZE, this.game.assets['images/player.png'], false);
     you.setSpeed(PLAYER_SPEED);
@@ -64,6 +92,7 @@ class GameFlow{
           b.collision = true;
         });
       }
+      // アイテム設置 mapdata.existを使う
     });
     you.onMoveStart((prevCoord, nextCoord, isContinuous) => {
       window.mw.bombermanAction('move', prevCoord, nextCoord);

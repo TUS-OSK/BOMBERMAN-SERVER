@@ -135,10 +135,13 @@ function socketExecute(io) {
       if (data.roomID) {
         io.to(data.roomID).emit('bomberman-message', data);
       }
-    })
+    });
 
     socket.on('room-members', (user) => {
-      io.socket.emit('room-message', sendFormat("room-members", roomManager.roomList[user.rid].members));
+      if (user.rid) {
+        io.to(roomManager.roomList[user.rid])
+          .emit('room-message', sendFormat("room-members", roomManager.roomList[user.rid].members));
+      }
     });
 
     socket.on('room-message', function(data) {

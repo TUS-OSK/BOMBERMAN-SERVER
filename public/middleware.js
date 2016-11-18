@@ -40,6 +40,7 @@ class RoomActions {
     console.log('createroom send',this.user);
     this.sio.emit("room-createRoom", [this.user]);
   }
+
   // startGame() {
   //   this.sio.emit("room-startGame", [this.user]);
   // }
@@ -92,6 +93,11 @@ class BombermanActions {
   }
   requestmove() {
     this.send("requestmove");
+  }
+  obstaclePositions(positions) {
+    this.send("obstaclePositions", {
+      positions: positions.concat()
+    });
   }
   // handshake() {
   //   this.send("handshake");
