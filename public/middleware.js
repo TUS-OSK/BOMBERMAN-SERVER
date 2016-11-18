@@ -151,8 +151,8 @@ class Middleware extends window.EventEmitter {
       if (!this.rid) {
         this.bombermanActions.roomID = data.data.user.rid;
         this.rid = data.data.user.rid;
-        this.members = data.data.roomList[this.rid].members;
       }
+      this.members = data.data.roomList[this.rid].members;
     });
   }
 

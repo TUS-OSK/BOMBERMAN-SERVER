@@ -18,7 +18,7 @@ function startGame(){
   game.onload = function(){
     game.keybind(' '.charCodeAt(0), 'space');
         // setTimeout(() => {
-    gameFlow.start([1, 1]);
+    gameFlow.start();
         // }, Math.random(5000));
   };
   game.start();
@@ -29,7 +29,7 @@ class GameFlow{
     this.game = game;
   }
 
-  start(spawnCoord){
+  start(){
     var playScene = new Scene();
     var map = [
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -44,8 +44,11 @@ class GameFlow{
       [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
       [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ];
-    var isHost = mw.members[0].uid === mw.uid;
-    console.log("host status",isHost,mw.members.map((member)=>member.uid),mw.uid);
+    var playerPort = mw.members.map((m)=>m.uid).indexOf(mw.uid);
+    console.log("playerPort:",playerPort)
+    var isHost = playerPort === 0;
+    var spawnCoord = [[1,1],[1,map.length-2],[map[0].length-2,1],[map[0].length-2,map[0].length-2]][playerPort];
+
     var obstacleDatas = [];
     if (isHost) {
       map.forEach((row, y) => {
