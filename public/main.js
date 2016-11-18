@@ -47,6 +47,10 @@ class GameFlow{
     map.forEach((row, y) => {
       row.forEach((cel, x) => {
         playScene.addChild(new Tile(x, y, SIZE, this.game.assets['images/map.png'], cel, [false, true]));
+        if (cel === 0 && Math.random() < 0.6 && !(x === 1 && y === 1)) {
+            var obstacle = new Obstacle(x, y, SIZE, this.game.assets['images/map.png']);
+            playScene.addChild(obstacle);
+        }
       });
     });
     // you
@@ -92,6 +96,11 @@ class GameFlow{
             b.detonate();
           });
         }
+        var obstacles = mapData.exist([flameCx, flameCy], 'Obstacle');
+        obstacles && obstacles.forEach((o) => {
+          playScene.removeChild(o);
+          o.remove();
+        });
       }, (tick, expired) => {
         playScene.addEventListener('enterframe', tick);
         expired(() => {
@@ -495,13 +504,18 @@ var Bomb = Class.create(Collider, {
 
   flame(cb){
     cb(this.cx, this.cy);
-    for(var i = 1; i <= this.fireLength; i++){
-      [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach((dc) => {
-        if(mapData.exist([this.cx + dc[0], this.cy + dc[1]], 'Tile')[0].collision === false){
-          cb(this.cx + dc[0], this.cy + dc[1]);
+    [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach((dc) => {
+      var obstacleFlag = false;
+      for(var i = 1; i <= this.fireLength; i++){
+        if(mapData.exist([this.cx + dc[0]*i, this.cy + dc[1]*i], 'Tile')[0].collision || obstacleFlag){
+          break;
         }
-      });
-    }
+        if (mapData.exist([this.cx + dc[0]*i, this.cy + dc[1]*i], 'Obstacle')) {
+          obstacleFlag = true;
+        }
+        cb(this.cx + dc[0]*i, this.cy + dc[1]*i);
+      }
+    });
   },
 });
 
@@ -533,6 +547,8 @@ const Obstacle = Class.create(Collider, {
   initialize(cx, cy, size, image) {
     Collider.call(this, cx, cy, size, true, true);
     this.image = image;
-    this.frame = 0;
+    this.frame = 1;
   },
+
+
 });
