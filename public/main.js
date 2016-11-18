@@ -14,7 +14,7 @@ function startGame(){
   $('.root-wrap').html('');
   var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1] + MERGIN);  // game display size
   game.fps = FPS;                  // frame per second
-  game.preload('images/player.png', 'images/player2.png', 'images/map.png', 'images/bomb.png', 'images/flame.png', 'images/professor.png');
+  game.preload('images/player.png', 'images/player2.png', 'images/map.png', 'images/bomb.png', 'images/flame.png', 'images/professor.png', 'images/you-win.png', 'images/you-lose.png');
   var gameFlow = new GameFlow(game);
   game.onload = function(){
     game.keybind(' '.charCodeAt(0), 'space');
@@ -49,7 +49,7 @@ class GameFlow{
     console.log("playerPort:",playerPort)
     var isHost = playerPort === 0;
     var spawnCoord = [[1,1],[1,map.length-2],[map[0].length-2,1],[map[0].length-2,map[0].length-2]][playerPort];
-
+    var isLose = false;
     var obstacleDatas = [];
     if (isHost) {
       map.forEach((row, y) => {
@@ -208,6 +208,27 @@ class GameFlow{
     window.mw.on('putBomb', (data) => {
       setBomb(data.data.position.x, data.data.position.y, "other", data.data.fireLength);
     });
+    mw.on('death', (data) => {
+      var pos = data.data.position;
+      var zombies = mapData.exist(pos, 'Player');
+      zombies && zombies.forEach((zombie) => {
+        zombie.death(() => {
+          playScene.removeChild(zombie);
+        });
+      });
+
+      var playerCount = 0;
+      for (var i = 0; i < map.length; i++) for (var j = 0; j < map[i].length; j++) {
+        var players = mapData.exist([i, j], "Player");
+        if (players !== null) {
+          playerCount += players.length;
+        }
+      }
+      if (!isLose && playerCount === 1) {
+        var winDialog = new WinDialog(this.game.assets['images/you-win.png']);
+        playScene.addChild(winDialog);
+      }
+    })
     console.log('requestmove fired: ', window.mw.uid);
     // Controller
     const pad = new Pad();
@@ -263,6 +284,10 @@ class GameFlow{
         if(mapData.exist([cx, cy], 'Flame')){
           // alert("You Died!");
           // console.log("You Died!");
+          var loseDialog = new LoseDialog(this.game.assets['images/you-lose.png']);
+          playScene.addChild(loseDialog);
+          mw.bombermanAction("death", [cx, cy]);
+          isLose = true;
         }
       });
     });
@@ -511,6 +536,11 @@ var Player = Class.create(Collider, {
     console.log("canputbomb", this.currentBombCount,this.ability.bombCount)
     return this.currentBombCount < this.ability.bombCount;
   },
+
+  death(cb) {
+    this.remove();
+    cb();
+  }
 });
 
 class Timer {
@@ -660,3 +690,24 @@ const Professor = Class.create(Collider, {
   },
 });
 
+const LoseDialog = Class.create(Sprite, {
+  name() { return 'LoseDialog'; },
+
+  initialize(image) {
+    Sprite.call(this, 48*11, 48*5);
+    this.image = image;
+    this.x = 0;
+    this.y=48*3;
+  },
+});
+
+const WinDialog = Class.create(Sprite, {
+  name() { return 'WinDialog'; },
+
+  initialize(image) {
+    Sprite.call(this, 48*11, 48*5);
+    this.image = image;
+    this.x = 0;
+    this.y=48*3;
+  },
+});

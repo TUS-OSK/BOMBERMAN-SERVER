@@ -82,8 +82,9 @@ class BombermanActions {
       position: {from:from,to:to}
     });
   }
-  death() {
+  death(position) {
     this.send("death", {
+      position: position.concat()
     });
   }
   spawn(x,y) {
