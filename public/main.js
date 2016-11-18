@@ -66,6 +66,18 @@ class GameFlow{
       mw.bombermanAction('obstaclePositions', obstacleDatas);
     }
 
+    mw.on('removeItem', (d) => {
+      var pos = d.data;
+      var professors = mapData.exist(pos, 'Professor');
+      if (professors) {
+        var professor = professors[0];
+        professor.taken(() => {
+          playScene.removeChild(professor);
+        });
+      }
+
+    });
+
     mw.on('obstaclePositions', (data) => {
       var obstacleDatas = data.data;
       obstacleDatas.forEach((d) => {
@@ -96,11 +108,9 @@ class GameFlow{
     you.onMoveStart((prevCoord, nextCoord, isContinuous) => {
       window.mw.bombermanAction('move', prevCoord, nextCoord);
       var professors = mapData.exist(nextCoord, 'Professor');
-      if (professors) setTimeout(() => {
+      if (professors) {
         var professor = professors[0];
-        professor.taken(() => {
-          playScene.removeChild(professor);
-        });
+        mw.bombermanAction('removeItem', nextCoord);
         var statusUp = [
           () => { you.ability.speed++; },
           () => { you.ability.fireLength++; },
@@ -109,7 +119,7 @@ class GameFlow{
         statusUp[professor.itemType]();
 
         // ここに取得処理を書く
-      }, 300);
+      };
     });
     // bomb
     var setBomb = (cx, cy, player) => {

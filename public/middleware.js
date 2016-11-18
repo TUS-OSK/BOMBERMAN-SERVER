@@ -99,6 +99,9 @@ class BombermanActions {
       positions.concat()
     );
   }
+  removeItem(pos) {
+    this.send("removeItem", pos.concat());
+  }
   // handshake() {
   //   this.send("handshake");
   // }
