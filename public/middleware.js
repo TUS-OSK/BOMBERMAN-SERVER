@@ -101,13 +101,12 @@ class BombermanActions {
   // }
 }
 
-
 class Middleware extends window.EventEmitter {
 
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://nokogirl.cloudapp.net/');
+    this.sio = io.connect('http://localhost:3000/');
     this.rid = null;
     this.members = [];
 
@@ -135,7 +134,7 @@ class Middleware extends window.EventEmitter {
     });
 
     this.sio.on('bomberman-message', (data) => {
-      console.log("data:",data)
+      // console.log("data:",data)
       this.emit(data.name, data);
     });
 
@@ -147,7 +146,6 @@ class Middleware extends window.EventEmitter {
       }
     });
   }
-
 
   send(data) {
     data.uid = this.uid;
