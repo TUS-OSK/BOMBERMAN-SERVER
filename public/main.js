@@ -6,14 +6,14 @@ const MERGIN = 200;
 const CONTROLLER = [10, 400 + MERGIN];
 const FPS = 60;
 const ESP = 0.01;
-const BOMOB_TIMER = 4000;
+const BOMOB_TIMER = 3000;
 const PLAYER_SPEED = 500;
 
 function startGame(){
   $('.root-wrap').html('');
   var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1] + MERGIN);  // game display size
   game.fps = FPS;                  // frame per second
-  game.preload('images/player.png', 'images/map.png', 'images/bomb.png', 'images/flame.png');
+  game.preload('images/player.png', 'images/player2.png', 'images/map.png', 'images/bomb.png', 'images/flame.png');
   var gameFlow = new GameFlow(game);
   game.onload = function(){
     game.keybind(' '.charCodeAt(0), 'space');
@@ -73,7 +73,6 @@ class GameFlow{
       });
     });
 
-
     map.forEach((row, y) => {
       row.forEach((cel, x) => {
         playScene.addChild(new Tile(x, y, SIZE, this.game.assets['images/map.png'], cel, [false, true]));
@@ -128,7 +127,15 @@ class GameFlow{
         var obstacles = mapData.exist([flameCx, flameCy], 'Obstacle');
         obstacles && obstacles.forEach((o) => {
           playScene.removeChild(o);
-          o.remove();
+          o.broken(() => {
+            if (Math.random() < 0.3) {
+              var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/bomb.png']);
+              setTimeout(()=> {
+                debugger;
+                playScene.addChild(professor);
+              },1200);
+            }
+          });
         });
       }, (tick, expired) => {
         playScene.addEventListener('enterframe', tick);
@@ -507,7 +514,7 @@ var Bomb = Class.create(Collider, {
     this.finalizeCb = () => {};
     this.flameCb = () => {};
     this.timer = new Timer(FPS);
-    this.bomob_timer = 2000;
+    this.bomob_timer = 1000;
   },
 
   finalize(cb){
@@ -576,8 +583,26 @@ const Obstacle = Class.create(Collider, {
   initialize(cx, cy, size, image) {
     Collider.call(this, cx, cy, size, true, true);
     this.image = image;
-    this.frame = 1;
+    this.frame = 2;
   },
 
+  broken(cb) {
+    this.remove()
+    cb();
+  }
+});
 
+const Professor = Class.create(Collider, {
+  name() { return 'Professor'; },
+
+  initialize(cx, cy, size, image) {
+    Collider.call(this, cx, cy, size, false, true);
+    this.image = image;
+    this.frame = 0;
+  },
+
+  taken(cb) {
+    this.remove()
+    cb();
+  }
 });
