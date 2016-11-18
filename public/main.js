@@ -4,6 +4,7 @@ const SIZE = [48, 48];
 const MATRIX = [11, 11];
 const MERGIN = 200;
 const CONTROLLER = [10, 400 + MERGIN];
+const BUTTON = [400, 400 + MERGIN];
 const FPS = 60;
 const ESP = 0.01;
 const BOMOB_TIMER = 3000;
@@ -212,6 +213,15 @@ class GameFlow{
     const pad = new Pad();
     pad.moveTo(CONTROLLER[0], CONTROLLER[1]);
     playScene.addChild(pad);
+    var button = new Button("○", "light");
+    button.moveTo(BUTTON[0],BUTTON[1]);
+    playScene.addChild(button);
+    button.ontouchstart = function(){
+      if(!(mapData.exist([you.cx, you.cy], 'Bomb')) && you.canPutBomb()){
+        setBomb(you.cx, you.cy, "you", you.ability.fireLength);
+        window.mw.bombermanAction('putBomb', you.cx, you.cy, you.ability.fireLength);
+      }
+    }
     // Add Scene
     this.game.pushScene(playScene);
     // Frame Event
