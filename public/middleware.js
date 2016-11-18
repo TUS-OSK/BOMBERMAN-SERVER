@@ -95,9 +95,9 @@ class BombermanActions {
     this.send("requestmove");
   }
   obstaclePositions(positions) {
-    this.send("obstaclePositions", {
-      positions: positions.concat()
-    });
+    this.send("obstaclePositions", 
+      positions.concat()
+    );
   }
   // handshake() {
   //   this.send("handshake");

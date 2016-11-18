@@ -46,7 +46,7 @@ class GameFlow{
     ];
     var isHost = mw.members[0].uid === mw.uid;
     console.log("host status",isHost,mw.members.map((member)=>member.uid),mw.uid);
-    var positions = [];
+    var obstacleDatas = [];
     if (isHost) {
       map.forEach((row, y) => {
         row.forEach((cel, x) => {
@@ -58,17 +58,18 @@ class GameFlow{
             map[x][y] === 0 &&
             Math.random() < 0.7
           ) {
-            positions.push([x, y]);
+            var item = Math.random() < 0.4 ? Math.random()*3|0 : -1;
+            obstacleDatas.push([x, y, item]); // -1だったらアイテム無し、0～2ならアイテム
           }
         });
       });
-      mw.bombermanAction('obstaclePositions', positions);
+      mw.bombermanAction('obstaclePositions', obstacleDatas);
     }
 
     mw.on('obstaclePositions', (data) => {
-      var positions = data.data.positions;
-      positions.forEach((pos) => {
-        var obstacle = new Obstacle(pos[0], pos[1], SIZE, this.game.assets['images/map.png']);
+      var obstacleDatas = data.data;
+      obstacleDatas.forEach((d) => {
+        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
         playScene.addChild(obstacle);
       });
     });
@@ -143,9 +144,9 @@ class GameFlow{
         var obstacles = mapData.exist([flameCx, flameCy], 'Obstacle');
         obstacles && obstacles.forEach((o) => {
           playScene.removeChild(o);
-          o.broken(() => {
-            if (Math.random() < 0.4) {
-              var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], Math.random()*3|0);
+          o.broken((item) => {
+            if (item !== null) {
+              var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], item);
               setTimeout(() => {
                 playScene.addChild(professor);
               },1200);
@@ -607,15 +608,16 @@ var Flame = Class.create(Collider, {
 const Obstacle = Class.create(Collider, {
   name() { return 'Obstacle'; },
 
-  initialize(cx, cy, size, image) {
+  initialize(cx, cy, size, image, item) {
     Collider.call(this, cx, cy, size, true, true);
     this.image = image;
     this.frame = 2;
+    this.nextItem = !~item ? null/*アイテムない*/ : item;
   },
 
   broken(cb) {
     this.remove()
-    cb();
+    cb(this.nextItem);
   },
 });
 
