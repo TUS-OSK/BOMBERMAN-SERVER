@@ -111,15 +111,17 @@ class GameFlow{
       }, 300);
     });
     // bomb
-    var setBomb = (cx, cy) => {
+    var setBomb = (cx, cy, player) => {
       if (mapData.exist([cx, cy], 'Bomb')) {
         return;
       }
-      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, you.ability.fireLength, playScene);
+      if (player === "you") you.currentBombCount++;
+      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, you.ability.fireLength, playScene, player);
       bomb.bomob_timer = BOMOB_TIMER;
       playScene.addChild(bomb);
       bomb.finalize(() => {
         playScene.removeChild(bomb);
+        if (player === "you") you.currentBombCount--;
       });
       bomb.startTimer((flameCx, flameCy) => {
         var flame = new Flame(flameCx, flameCy, SIZE, this.game.assets['images/flame.png']);
@@ -189,7 +191,7 @@ class GameFlow{
       }
     });
     window.mw.on('putBomb', (data) => {
-      setBomb(data.data.position.x, data.data.position.y);
+      setBomb(data.data.position.x, data.data.position.y, "other");
     });
     console.log('requestmove fired: ', window.mw.uid);
     // Controller
@@ -203,8 +205,8 @@ class GameFlow{
       var moveVector = [0, 0];
       // move sequence --------------
       if(this.game.input.space){
-        if(!(mapData.exist([you.cx, you.cy], 'Bomb'))){
-          setBomb(you.cx, you.cy);
+        if(!(mapData.exist([you.cx, you.cy], 'Bomb')) && you.canPutBomb()){
+          setBomb(you.cx, you.cy, "you");
           window.mw.bombermanAction('putBomb', you.cx, you.cy, 1);
         }
       }else if(this.game.input.up){
@@ -449,7 +451,7 @@ var Player = Class.create(Collider, {
     this.ability = {
       fireLength: 1,
       speed: 1,
-      bombCount: 2
+      bombCount: 1
     };
     this.currentBombCount = 0;
   },
@@ -479,6 +481,11 @@ var Player = Class.create(Collider, {
     if (this.isMoving()) {
       cb(this.cx + this.current[0], this.cy + this.current[1]);
     }
+  },
+
+  canPutBomb() {
+    console.log("canputbomb", this.currentBombCount,this.ability.bombCount)
+    return this.currentBombCount < this.ability.bombCount;
   },
 });
 
@@ -521,7 +528,7 @@ class Timer {
 var Bomb = Class.create(Collider, {
   name() { return 'Bomb'; },
 
-  initialize(cx, cy, size, image, collision, fireLength){
+  initialize(cx, cy, size, image, collision, fireLength, player){
     Collider.call(this, cx, cy, size, collision, true);
     this.image = image;
     this.frame = 0;
@@ -534,6 +541,7 @@ var Bomb = Class.create(Collider, {
     this.flameCb = () => {};
     this.timer = new Timer(FPS);
     this.bomob_timer = 1000;
+    this.handlePlayer = player; // "you", "other"
   },
 
   finalize(cb){
@@ -608,7 +616,7 @@ const Obstacle = Class.create(Collider, {
   broken(cb) {
     this.remove()
     cb();
-  }
+  },
 });
 
 const Professor = Class.create(Collider, {
@@ -624,6 +632,6 @@ const Professor = Class.create(Collider, {
   taken(cb) {
     this.remove();
     cb();
-  }
+  },
 });
 
