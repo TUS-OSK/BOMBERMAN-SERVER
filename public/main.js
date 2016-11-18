@@ -4,14 +4,15 @@ const SIZE = [48, 48];
 const MATRIX = [11, 11];
 const MERGIN = 200;
 const CONTROLLER = [10, 400 + MERGIN];
-const FPS = 30;
+const FPS = 60;
 const ESP = 0.01;
-const BOMOB_TIMER = 3000;
+const BOMOB_TIMER = 4000;
+const PLAYER_SPEED = 500;
 
 function startGame(){
   $('.root-wrap').html('');
   var game = new Core(SIZE[0] * MATRIX[0], SIZE[1] * MATRIX[1] + MERGIN);  // game display size
-  game.fps = 60;                  // frame per second
+  game.fps = FPS;                  // frame per second
   game.preload('images/player.png', 'images/map.png', 'images/bomb.png', 'images/flame.png');
   var gameFlow = new GameFlow(game);
   game.onload = function(){
@@ -50,7 +51,7 @@ class GameFlow{
     });
     // you
     var you = new Player(spawnCoord[0], spawnCoord[1], SIZE, this.game.assets['images/player.png'], false);
-    you.setSpeed(1000);
+    you.setSpeed(PLAYER_SPEED);
     playScene.addChild(you);
     you.onMoveEnd((prevCoord, nextCoord, isContinuous) => {
       var currentBomb = mapData.exist(prevCoord, 'Bomb');
@@ -107,7 +108,7 @@ class GameFlow{
         var indexOther = others.map((v) => v.userID).indexOf(data.userID);
         if(indexOther === -1){
           const other = new Player(data.data.position.to[0], data.data.position.to[1], SIZE, this.game.assets['images/player.png'], false);
-          other.setSpeed(1000);
+          other.setSpeed(PLAYER_SPEED);
           other.userID = data.userID;
           other.onMoveEnd((prevCoord, nextCoord, isContinuous) => {
             console.log('other moveend', nextCoord, isContinuous);
@@ -483,6 +484,7 @@ var Bomb = Class.create(Collider, {
   },
 
   detonate(){
+    // console.log('detonate', this.cx, this.cy);
     if(this.timer){
       this.timer.clearTimeout();
     }
@@ -495,7 +497,7 @@ var Bomb = Class.create(Collider, {
     cb(this.cx, this.cy);
     for(var i = 1; i <= this.fireLength; i++){
       [[0, 1], [0, -1], [1, 0], [-1, 0]].forEach((dc) => {
-        if(mapData.check([this.cx + dc[0], this.cy + dc[1]])){
+        if(mapData.exist([this.cx + dc[0], this.cy + dc[1]], 'Tile')[0].collision === false){
           cb(this.cx + dc[0], this.cy + dc[1]);
         }
       });
@@ -522,5 +524,15 @@ var Flame = Class.create(Collider, {
       cb();
       this.remove();
     }, 1.2 * 1000, timerRegister);
+  },
+});
+
+const Obstacle = Class.create(Collider, {
+  name() { return 'Obstacle'; },
+
+  initialize(cx, cy, size, image) {
+    Collider.call(this, cx, cy, size, true, true);
+    this.image = image;
+    this.frame = 0;
   },
 });
