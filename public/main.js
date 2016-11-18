@@ -100,6 +100,13 @@ class GameFlow{
         professor.taken(() => {
           playScene.removeChild(professor);
         });
+        var statusUp = [
+          () => { you.ability.speed++; },
+          () => { you.ability.fireLength++; },
+          () => { you.ability.bombCount++; },
+        ];
+        statusUp[professor.itemType]();
+
         // ここに取得処理を書く
       }, 300);
     });
@@ -108,7 +115,7 @@ class GameFlow{
       if (mapData.exist([cx, cy], 'Bomb')) {
         return;
       }
-      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, 1, playScene);
+      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, you.ability.fireLength, playScene);
       bomb.bomob_timer = BOMOB_TIMER;
       playScene.addChild(bomb);
       bomb.finalize(() => {
@@ -439,6 +446,12 @@ var Player = Class.create(Collider, {
     this.onMoveEndEvents = [];
     this.onMoveStartEvents = [];
     this.userID = null;
+    this.ability = {
+      fireLength: 1,
+      speed: 1,
+      bombCount: 2
+    };
+    this.currentBombCount = 0;
   },
 
   onMoveEnd(cb) {
