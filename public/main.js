@@ -122,12 +122,12 @@ class GameFlow{
       };
     });
     // bomb
-    var setBomb = (cx, cy, player) => {
+    var setBomb = (cx, cy, player, fireLength) => {
       if (mapData.exist([cx, cy], 'Bomb')) {
         return;
       }
       if (player === "you") you.currentBombCount++;
-      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, you.ability.fireLength, playScene, player);
+      var bomb = new Bomb(cx, cy, SIZE, this.game.assets['images/bomb.png'], false, fireLength, playScene, player);
       bomb.bomob_timer = BOMOB_TIMER;
       playScene.addChild(bomb);
       bomb.finalize(() => {
@@ -202,7 +202,7 @@ class GameFlow{
       }
     });
     window.mw.on('putBomb', (data) => {
-      setBomb(data.data.position.x, data.data.position.y, "other");
+      setBomb(data.data.position.x, data.data.position.y, "other", data.data.fireLength);
     });
     console.log('requestmove fired: ', window.mw.uid);
     // Controller
@@ -217,8 +217,8 @@ class GameFlow{
       // move sequence --------------
       if(this.game.input.space){
         if(!(mapData.exist([you.cx, you.cy], 'Bomb')) && you.canPutBomb()){
-          setBomb(you.cx, you.cy, "you");
-          window.mw.bombermanAction('putBomb', you.cx, you.cy, 1);
+          setBomb(you.cx, you.cy, "you", you.ability.fireLength);
+          window.mw.bombermanAction('putBomb', you.cx, you.cy, you.ability.fireLength);
         }
       }else if(this.game.input.up){
         moveVector = [0, -1];
