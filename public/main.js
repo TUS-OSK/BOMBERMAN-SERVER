@@ -18,9 +18,9 @@ function startGame(){
   var gameFlow = new GameFlow(game);
   game.onload = function(){
     game.keybind(' '.charCodeAt(0), 'space');
-        // setTimeout(() => {
-    gameFlow.start();
-        // }, Math.random(5000));
+    setTimeout(() => {
+      gameFlow.start();
+    }, 1000);
   };
   game.start();
 }
@@ -53,6 +53,7 @@ class GameFlow{
     var obstacleDatas = [];
     var alreadyMade = false;
     mw.on('obstaclePositions', (data) => {
+      debugger;
       if (!alreadyMade) {
         var obstacleDatas = data.data;
         obstacleDatas.forEach((d) => {
@@ -172,9 +173,9 @@ class GameFlow{
           o.broken((item) => {
             if (item !== null) {
               var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], item);
-              setTimeout(() => {
-                playScene.addChild(professor);
-              },1200);
+              // setTimeout(() => {
+              //   playScene.addChild(professor);
+              // },1200);
             }
           });
         });
