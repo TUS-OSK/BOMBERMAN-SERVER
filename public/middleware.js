@@ -96,7 +96,7 @@ class BombermanActions {
     this.send("requestmove");
   }
   obstaclePositions(positions) {
-    this.send("obstaclePositions", 
+    this.send("obstaclePositions",
       positions.concat()
     );
   }
@@ -116,7 +116,7 @@ class Middleware extends window.EventEmitter {
   constructor() {
     super();
     this.uid = Math.random().toString(36).slice(-8);
-    this.sio = io.connect('http://nokogirl.cloudapp.net/');
+    this.sio = io.connect('http://localhost:3000/');
     this.rid = null;
     this.members = [];
 

@@ -52,6 +52,7 @@ $(() => {
   });
 
   mw.on('room-all', (d) => {
+    if (!d.data.user) return;
     const rid = d.data.user.rid;
     const room = d.data.roomList[rid];
     const memberNumber = room && room.members.length;

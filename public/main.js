@@ -51,6 +51,13 @@ class GameFlow{
     var spawnCoord = [[1,1],[1,map.length-2],[map[0].length-2,1],[map[0].length-2,map[0].length-2]][playerPort];
     var isLose = false;
     var obstacleDatas = [];
+    mw.on('obstaclePositions', (data) => {
+      var obstacleDatas = data.data;
+      obstacleDatas.forEach((d) => {
+        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
+        playScene.addChild(obstacle);
+      });
+    });
     if (isHost) {
       map.forEach((row, y) => {
         row.forEach((cel, x) => {
@@ -68,6 +75,10 @@ class GameFlow{
         });
       });
       mw.bombermanAction('obstaclePositions', obstacleDatas);
+      obstacleDatas.forEach((d) => {
+        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
+        playScene.addChild(obstacle);
+      });
     }
 
     mw.on('removeItem', (d) => {
@@ -82,13 +93,6 @@ class GameFlow{
 
     });
 
-    mw.on('obstaclePositions', (data) => {
-      var obstacleDatas = data.data;
-      obstacleDatas.forEach((d) => {
-        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
-        playScene.addChild(obstacle);
-      });
-    });
 
     map.forEach((row, y) => {
       row.forEach((cel, x) => {
