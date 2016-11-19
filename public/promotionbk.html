@@ -762,6 +762,7 @@ web班らしくインターネットを通じて指定のURLに接続した人�
 
 <p>これは…班員が作った素数判定ソフト……！
 桁数5以上で素数を当てられるか……！？
+※6桁以上の素因数分解はクソ時間がかかるから気をつけろっ……！
 <img class="center-image" width="60%" src="http://blog-imgs-63.fc2.com/o/n/e/onecolor116/fc2_2014-06-19_16-29-11-988.png"></p>
 
 <p><input type="button" id="hint1" onClick="hint1();" value="ヒント" /></p>
@@ -784,7 +785,7 @@ web班らしくインターネットを通じて指定のURLに接続した人�
     }
     
     function primeFact(){
-        document.getElementById("output").innerText = primeFactrization_light(document.getElementById("number").value);
+        document.getElementById("output").innerText = primeFactrization(document.getElementById("number").value);
     }    
     function hint1(){
         document.getElementById("output").innerText = "ガッツだぜ";
@@ -807,36 +808,6 @@ web班らしくインターネットを通じて指定のURLに接続した人�
                 return true;
             }
         }
-    }
-
-    function primeFactrization_light(input){
-      var inputNumber = input;
-      var result = [];
-      var resultString = "";
-      console.time("prime factrization time");
-      if(prime(inputNumber)){
-        resultString = "素数です！";
-        console.log("素数です！！！！！");
-      }else{
-        var i = 2;
-          while(input > 1){
-              if(input % i === 0){
-                result.push(i);
-                  input /= i;
-              }else{
-                i++;
-              }
-          }
-        console.log(result.toString());
-        result.forEach(function(v, i){
-            resultString += v;
-            if(i < result.length - 1){
-                resultString += "×"
-            }
-        });
-      }
-      return resultString;
-      console.timeEnd("prime factrization time");
     }
     
     function primeFactrization(input){
