@@ -51,12 +51,16 @@ class GameFlow{
     var spawnCoord = [[1,1],[1,map.length-2],[map[0].length-2,1],[map[0].length-2,map[0].length-2]][playerPort];
     var isLose = false;
     var obstacleDatas = [];
+    var alreadyMade = false;
     mw.on('obstaclePositions', (data) => {
-      var obstacleDatas = data.data;
-      obstacleDatas.forEach((d) => {
-        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
-        playScene.addChild(obstacle);
-      });
+      if (!alreadyMade) {
+        var obstacleDatas = data.data;
+        obstacleDatas.forEach((d) => {
+          var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
+          playScene.addChild(obstacle);
+        });
+        alreadyMade = true;
+      }
     });
     if (isHost) {
       map.forEach((row, y) => {
@@ -75,6 +79,9 @@ class GameFlow{
         });
       });
       mw.bombermanAction('obstaclePositions', obstacleDatas);
+      setTimeout(() => {
+        mw.bombermanAction('obstaclePositions', obstacleDatas);
+      }, 1000)
       obstacleDatas.forEach((d) => {
         var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
         playScene.addChild(obstacle);
