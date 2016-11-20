@@ -80,13 +80,9 @@ class GameFlow{
         });
       });
       mw.bombermanAction('obstaclePositions', obstacleDatas);
-      setTimeout(() => {
-        mw.bombermanAction('obstaclePositions', obstacleDatas);
-      }, 1000)
-      obstacleDatas.forEach((d) => {
-        var obstacle = new Obstacle(d[0], d[1], SIZE, this.game.assets['images/map.png'], d[2]);
-        playScene.addChild(obstacle);
-      });
+      // setTimeout(() => {
+      //   mw.bombermanAction('obstaclePositions', obstacleDatas);
+      // }, 1000)
     }
 
     mw.on('removeItem', (d) => {
@@ -173,9 +169,9 @@ class GameFlow{
           o.broken((item) => {
             if (item !== null) {
               var professor = new Professor(flameCx, flameCy, SIZE, this.game.assets['images/professor.png'], item);
-              // setTimeout(() => {
-              //   playScene.addChild(professor);
-              // },1200);
+              setTimeout(() => {
+                playScene.addChild(professor);
+              },1200);
             }
           });
         });
