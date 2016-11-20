@@ -79,10 +79,10 @@ class GameFlow{
           }
         });
       });
-      mw.bombermanAction('obstaclePositions', obstacleDatas);
-      // setTimeout(() => {
-      //   mw.bombermanAction('obstaclePositions', obstacleDatas);
-      // }, 1000)
+      // mw.bombermanAction('obstaclePositions', obstacleDatas);
+      setTimeout(() => {
+        mw.bombermanAction('obstaclePositions', obstacleDatas);
+      }, 1000)
     }
 
     mw.on('removeItem', (d) => {
